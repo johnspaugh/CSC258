@@ -6,4 +6,7 @@ Taro Kumagai
 Michael Robertson
 Niravkumar Tandel 
 
-John - look into how to use json to import and process data
+reddit api - Micheal
+reasch json -john
+docker network - Nirav
+discord -taro
