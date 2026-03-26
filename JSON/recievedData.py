@@ -3,7 +3,9 @@
 import json
 
 data = '''{
-    "name": "chuck"
+    "username": "chuck",
+    "date": datetime,
+    "postcontact": yesStatus
     "phone": {
         "type": "int1"
         "number": "+1 734 303 4456"
@@ -12,7 +14,7 @@ data = '''{
         "hide": 'yes'
     }
 }'''
-info = json.oads(data)
-printf('Name:', info["name"])
-printf('Hide:', info["email"]["hide"])
+info = json.loads(data)
+print('Name:', info["username"])
+print('Hide:', info["email"]["hide"])
 
