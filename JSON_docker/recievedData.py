@@ -5,6 +5,10 @@ import re
 import os
 from pathlib import Path
 from models import DataModelRetrieved, ReplyRef, Main
+from dataclasses import asdict
+
+# Global variable to store the JSON formatted data
+processed_data_json = None
 
 # ?example?
 # Reconstruct InspectionData if present
@@ -119,6 +123,35 @@ def filter_to_data_model(extracted_data):
     
     return filtered_data
 
+def convert_to_json(filtered_data):
+    """
+    Convert DataModelRetrieved objects to JSON format and store in global variable
+    """
+    global processed_data_json
+    
+    try:
+        # Convert dataclasses to dictionaries for JSON serialization
+        json_data = []
+        for data_model in filtered_data:
+            data_dict = asdict(data_model)
+            json_data.append(data_dict)
+        
+        # Convert to JSON string
+        processed_data_json = json.dumps(json_data, indent=2, default=str)
+        return processed_data_json
+    except Exception as e:
+        print(f"Error converting to JSON: {e}")
+        processed_data_json = None
+        return None
+
+def get_processed_data_json():
+    """
+    Function for other files to retrieve the processed data in JSON format
+    Returns the JSON string or None if not available
+    """
+    global processed_data_json
+    return processed_data_json
+
 # Main execution
 # Construct path to MichealSampleData.md
 current_dir = Path(__file__).parent
@@ -134,7 +167,11 @@ if raw_text_data:
     # Filter into DataModelRetrieved objects
     filtered_vars = filter_to_data_model(extracted_vars)
     
+    # Convert to JSON and store in global variable
+    json_data = convert_to_json(filtered_vars)
+    
     print(f"Processed {len(filtered_vars)} records into DataModelRetrieved objects")
+    print(f"Data converted to JSON format and stored in global variable")
     
     # Display first record if available
     if filtered_vars:
@@ -144,6 +181,11 @@ if raw_text_data:
         print(f"  Text: {filtered_vars[0].text}")
         print(f"  Created At: {filtered_vars[0].created_at}")
         print(f"  Indexed At: {filtered_vars[0].indexed_at}")
+        
+        # Show a preview of the JSON
+        if json_data:
+            print("\nJSON preview (first 200 characters):")
+            print(json_data[:200] + "..." if len(json_data) > 200 else json_data)
 
 
 
