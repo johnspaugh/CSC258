@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "dr1b6ItiJsw=",
+  "dgSpecHash": "Vbulm4qGOWQ=",
   "success": true,
-  "projectFilePath": "D:\\GitHub Repositories\\MuscleBotTest\\MuscleBot\\MuscleBot\\MuscleBot.csproj",
+  "projectFilePath": "D:\\GitHub Repositories\\CSC258GroupRepo\\Bot_docker\\MuscleBot\\MuscleBot.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\tckum\\.nuget\\packages\\dsharpplus\\4.5.1\\dsharpplus.4.5.1.nupkg.sha512",
     "C:\\Users\\tckum\\.nuget\\packages\\dsharpplus.commandsnext\\4.5.1\\dsharpplus.commandsnext.4.5.1.nupkg.sha512",

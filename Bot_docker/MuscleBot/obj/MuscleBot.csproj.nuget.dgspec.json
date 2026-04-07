@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\GitHub Repositories\\MuscleBotTest\\MuscleBot\\MuscleBot\\MuscleBot.csproj": {}
+    "D:\\GitHub Repositories\\CSC258GroupRepo\\Bot_docker\\MuscleBot\\MuscleBot.csproj": {}
   },
   "projects": {
-    "D:\\GitHub Repositories\\MuscleBotTest\\MuscleBot\\MuscleBot\\MuscleBot.csproj": {
+    "D:\\GitHub Repositories\\CSC258GroupRepo\\Bot_docker\\MuscleBot\\MuscleBot.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\GitHub Repositories\\MuscleBotTest\\MuscleBot\\MuscleBot\\MuscleBot.csproj",
+        "projectUniqueName": "D:\\GitHub Repositories\\CSC258GroupRepo\\Bot_docker\\MuscleBot\\MuscleBot.csproj",
         "projectName": "MuscleBot",
-        "projectPath": "D:\\GitHub Repositories\\MuscleBotTest\\MuscleBot\\MuscleBot\\MuscleBot.csproj",
+        "projectPath": "D:\\GitHub Repositories\\CSC258GroupRepo\\Bot_docker\\MuscleBot\\MuscleBot.csproj",
         "packagesPath": "C:\\Users\\tckum\\.nuget\\packages\\",
-        "outputPath": "D:\\GitHub Repositories\\MuscleBotTest\\MuscleBot\\MuscleBot\\obj\\",
+        "outputPath": "D:\\GitHub Repositories\\CSC258GroupRepo\\Bot_docker\\MuscleBot\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
