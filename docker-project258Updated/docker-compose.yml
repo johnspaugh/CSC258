@@ -1,0 +1,19 @@
+services:
+  datarequest:
+    build: ./dataRequest
+    container_name: datarequest
+    restart: unless-stopped
+    depends_on:
+      - dataingestion
+
+  dataingestion:
+    build: ./dataIngestion
+    container_name: dataingestion
+    restart: unless-stopped
+    depends_on:
+      - dataprocessing
+
+  dataprocessing:
+    build: ./dataProcessing
+    container_name: dataprocessing
+    restart: unless-stopped
