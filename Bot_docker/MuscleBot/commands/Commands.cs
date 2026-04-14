@@ -10,7 +10,7 @@ namespace MuscleBot.commands
 {
     public class BlueSkyCommands
     {
-        [Command("BlueSky")]
+        [Command("Ingest")]
         public async Task IngestBlueSky(CommandContext ctx)
         {
             using var client = new TcpClient("muscleBot", 9000);
