@@ -13,7 +13,9 @@ namespace MuscleBot.commands
         static string BLUESKY_HOST = "dataingestion"; // change if outside docker
         static int BLUESKY_PORT = 5000;
 
-        [Command("Ingest")]
+        public static CommandContext? currentContext;
+
+        [Command("ingest")]
         public async Task IngestBlueSky(CommandContext ctx)
         {
             try
@@ -30,6 +32,11 @@ namespace MuscleBot.commands
                     // Send out command to BluSky ingestion
                     NetworkStream stream = client.GetStream();
                     stream.Write(bytes, 0, bytes.Length);
+
+                    // Saved context
+                    currentContext = ctx;
+
+                    Console.WriteLine($"Stored channel: {ctx.Channel.Id}");
 
                     await ctx.Channel.SendMessageAsync($"Sent -> {json}");
                 }

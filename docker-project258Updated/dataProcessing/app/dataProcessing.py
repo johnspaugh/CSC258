@@ -4,7 +4,7 @@ import json
 HOST = "0.0.0.0"
 PORT = 5000
 
-NEXT_HOST = "datarequest"
+NEXT_HOST = "musclebot"
 NEXT_PORT = 5000
 
 

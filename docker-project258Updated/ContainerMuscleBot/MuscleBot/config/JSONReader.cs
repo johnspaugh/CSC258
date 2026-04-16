@@ -20,7 +20,7 @@ namespace MuscleBot.config
             using (StreamReader sr = new StreamReader(path))
             {
                 string json = await sr.ReadToEndAsync();
-                JSONStructure data = JsonConvert.DeserializeObject<JSONStructure>(json);
+                JSONStructure? data = JsonConvert.DeserializeObject<JSONStructure>(json);
 
                 if (data != null)
                 {
