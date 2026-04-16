@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 
 namespace MuscleBot.commands
-{
+{ 
     public class BlueSkyCommands : BaseCommandModule
     {
         static string BLUESKY_HOST = "dataingestion"; // change if outside docker
@@ -42,7 +42,7 @@ namespace MuscleBot.commands
 
         public class Command
         {
-            public string message { get; set; } = "start";
+            public string message { get; set; } = "request";
             public string[] path { get; set; }  = new string[] { "dataRequest" };
             public int iterations { get; set; }  = 1;
             public string status { get; set; }  = "requested";

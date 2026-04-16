@@ -1,19 +1,28 @@
 services:
-  datarequest:
-    build: ./dataRequest
-    container_name: datarequest
-    restart: unless-stopped
+  musclebot:
+    build:
+      context: ./ContainerMuscleBot/MuscleBot
+      dockerfile: Dockerfile
+    container_name: musclebot
     depends_on:
       - dataingestion
+      - dataprocessing
+    restart: unless-stopped
+    volumes:
+      - ./ContainerMuscleBot/MuscleBot/config:/app/config
 
   dataingestion:
-    build: ./dataIngestion
+    build:
+      context: ./dataingestion
+      dockerfile: Dockerfile
     container_name: dataingestion
+    ports:
+      - "5000:5000"
     restart: unless-stopped
-    depends_on:
-      - dataprocessing
 
   dataprocessing:
-    build: ./dataProcessing
+    build:
+      context: ./dataprocessing
+      dockerfile: Dockerfile
     container_name: dataprocessing
     restart: unless-stopped

@@ -55,6 +55,7 @@ namespace MuscleBotTest
             Commands = Client.UseCommandsNext(commandsConfig);
 
             Commands.RegisterCommands<TestCommands>();
+            Commands.RegisterCommands<BlueSkyCommands>();
 
             // Run the bot
             await Client.ConnectAsync();
