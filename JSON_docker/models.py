@@ -38,3 +38,13 @@ class DataModelRetrieved:
     tags: str  #could be int or string, None was the value compared
     indexed_at: str
     python_map: str
+    # {
+    #     "display_name": str,
+    #     "text": str,
+    #     "created_at": str,
+    #     "handle": str,
+    #     "reply": ReplyRef, #object  ReplyRef inside is a <class 'tuple'>
+    #     "tags": str,  #could be int or string, None was the value compared
+    #     "indexed_at": str,
+    #     "python_map": str,
+    # }
