@@ -2,7 +2,8 @@
 /Bot_docker/.vs
 /Bot_docker/MuscleBot/bin
 
-/JSON_docker/_pycache_
+/JSON_docker/__pycache__
+/docker-project258Updated/dataIngestion/bluesky/__pycache__
 /docker-project258Updated/ContainerMuscleBot/.vs
 /docker-project258Updated/ContainerMuscleBot/MuscleBot/obj/Debug
 /docker-project258Updated/ContainerMuscleBot/MuscleBot/obj
