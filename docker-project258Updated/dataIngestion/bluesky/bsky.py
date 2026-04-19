@@ -1,9 +1,9 @@
 from atproto import Client, client_utils
 import json
-# import socket
+import socket
 
-# HOST = "0.0.0.0"
-# PORT = 5000
+HOST = "0.0.0.0"
+PORT = 5000
 
 def get_posts():
     client = Client()
@@ -28,12 +28,12 @@ def get_posts():
     # print("Finished getting posts")
     # print(list)
 
-# with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-#     s.connect((HOST, PORT))
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.connect((HOST, PORT))
 
-#     posts = get_posts()
+    posts = get_posts()
 
-#     for post in posts: 
-#         s.sendall(post.encode("utf-8"))
-#         data = s.recv(1024)
+    for post in posts: 
+        s.sendall(post.encode("utf-8"))
+        data = s.recv(1024)
 

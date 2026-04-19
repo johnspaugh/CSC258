@@ -7,7 +7,7 @@ Michael Robertson
 Niravkumar Tandel 
 
 CONTRIBUTIONS:
-reddit api - Micheal
+reddit api - Michael
     all the threads, for example from the top
     also, priority on the most recent posts
     Not all responses?, more focus post that comes out on tree pre-detrmined phrases
