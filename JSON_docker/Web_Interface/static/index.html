@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FastAPI Demo</title>
+</head>
+<body>
+    <h1>FastAPI + HTML Demo</h1>
+
+    <input type="text" id="nameInput" placeholder="Enter your name">
+    <button onclick="callAPI()">Say Hello</button>
+
+    <p id="result"></p>
+
+    <script>
+        async function callAPI() {
+            const name = document.getElementById("nameInput").value;
+
+            const response = await fetch(`/api/hello?name=${name}`);
+            const data = await response.json();
+
+            document.getElementById("result").innerText = data.message;
+        }
+    </script>
+</body>
+</html>
