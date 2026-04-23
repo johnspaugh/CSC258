@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>FastAPI Demo</title>
+    <title>FastAPI Interface instead of Dicord console</title>
 </head>
+<script>
+    async function callAPI() {
+        const name = document.getElementById("nameInput").value;
+
+        const response = await fetch(`/api/hello?name=${name}`);
+        const data = await response.json();
+
+        document.getElementById("result").innerText = data.message;
+    }
+</script>
 <body>
     <h1>FastAPI + HTML Demo</h1>
+    <h1>FastAPI Interface to Access Fitness Searches in Posts</h1>
 
     <input type="text" id="nameInput" placeholder="Enter your name">
     <button onclick="callAPI()">Say Hello</button>
-
     <p id="result"></p>
 
-    <script>
-        async function callAPI() {
-            const name = document.getElementById("nameInput").value;
-
-            const response = await fetch(`/api/hello?name=${name}`);
-            const data = await response.json();
-
-            document.getElementById("result").innerText = data.message;
-        }
-    </script>
+    
 </body>
 </html>
