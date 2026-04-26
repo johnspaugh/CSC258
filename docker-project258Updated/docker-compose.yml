@@ -30,6 +30,15 @@ services:
       - "5000:5000"
     restart: unless-stopped
 
+  dataingestionmastodon:
+    build:
+      context: ./dataIngestionMastodon
+      dockerfile: Dockerfile
+    container_name: dataingestionmastodon
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    
   # Service to processes feeds into a digestable form
   dataprocessing:
     build:
