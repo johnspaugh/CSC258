@@ -6,21 +6,31 @@ Taro Kumagai
 Michael Robertson
 Niravkumar Tandel 
 
-Structure requires docker-project258Update to run its docker first,
- which will call on other dockers to run their applications inside.
+Structure:
 
-Dependencies and evironment,
+requires docker-project258Update to run its docker first,
+which will call on other dockers to run their applications inside.
+
+Dependencies and evironment:
+
 Web Interface depends on FASTAPI and venv
 docker depends on compose.yml for its build
 bot interface depend on discord permissions and access to Discord account
 
-Setup
+Setup:
 
 As mentioned, run docker-project258Update
 Navigate to source folder in command line
 run docker compose build
 run docker compose up
 Open a Discord server in which your account has sufficient permissions to invite bot and invite MuscleBotTest
+
+Execution:
+
+The bot currently supports the following commands:
+!test - The bot will respond with "hello [your username]".
+!bluesky ingest [keyword] - The bot will search bluesky for posts featuring the keyword and display information about the first result.
+!mastodon ingest - The bot will search Mastodon for posts with the keyword "fitness" and display information about the first result.
 
 
 CONTRIBUTIONS:
