@@ -2,25 +2,153 @@
 <html>
 <head>
     <title>FastAPI Interface instead of Dicord console</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            min-height: 20px;
+        }
+        #dataResults {
+            margin-top: 20px;
+        }
+        .data-item {
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .data-item h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        .data-field {
+            margin: 8px 0;
+            word-break: break-word;
+        }
+        .data-field strong {
+            color: #333;
+        }
+        .error {
+            color: #d32f2f;
+            padding: 10px;
+            background-color: #ffebee;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .success {
+            color: #388e3c;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .loading {
+            display: inline-block;
+            color: #666;
+        }
+    </style>
 </head>
 <script>
     async function callAPI() {
         const name = document.getElementById("nameInput").value;
-
         const response = await fetch(`/api/hello?name=${name}`);
         const data = await response.json();
-
         document.getElementById("result").innerText = data.message;
+    }
+
+    async function processBlueskyData() {
+        const resultDiv = document.getElementById("dataResults");
+        resultDiv.innerHTML = '<p class="loading">Processing Bluesky data...</p>';
+        
+        try {
+            const response = await fetch('/api/process-bluesky-data');
+            const data = await response.json();
+            
+            if (data.success) {
+                // Display success message and record count
+                let html = `<div class="success">✓ Successfully processed ${data.record_count} records</div>`;
+                
+                // Display each record
+                if (data.processed_data && data.processed_data.length > 0) {
+                    html += '<h3>Processed Results:</h3>';
+                    data.processed_data.forEach((item, index) => {
+                        html += `
+                            <div class="data-item">
+                                <h3>Record ${index + 1}</h3>
+                                <div class="data-field"><strong>Display Name:</strong> ${item.display_name || 'N/A'}</div>
+                                <div class="data-field"><strong>Handle:</strong> ${item.handle || 'N/A'}</div>
+                                <div class="data-field"><strong>Text:</strong> ${item.text || 'N/A'}</div>
+                                <div class="data-field"><strong>Created At:</strong> ${item.created_at || 'N/A'}</div>
+                                <div class="data-field"><strong>Indexed At:</strong> ${item.indexed_at || 'N/A'}</div>
+                                <div class="data-field"><strong>Tags:</strong> ${item.tags || 'N/A'}</div>
+                                ${item.reply ? `<div class="data-field"><strong>Is Reply:</strong> Yes</div>` : ''}
+                            </div>
+                        `;
+                    });
+                }
+                resultDiv.innerHTML = html;
+            } else {
+                resultDiv.innerHTML = `<div class="error">✗ Error: ${data.error}</div>`;
+            }
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="error">✗ Failed to process data: ${error.message}</div>`;
+        }
     }
 </script>
 <body>
-    <h1>FastAPI + HTML Demo</h1>
-    <h1>FastAPI Interface to Access Fitness Searches in Posts</h1>
+    <div class="container">
+        <h1>FastAPI Interface to Access Fitness Searches in Posts</h1>
+        
+        <h2>Say Hello</h2>
+        <input type="text" id="nameInput" placeholder="Enter your name">
+        <button onclick="callAPI()">Say Hello</button>
+        <p id="result"></p>
+    </div>
 
-    <input type="text" id="nameInput" placeholder="Enter your name">
-    <button onclick="callAPI()">Say Hello</button>
-    <p id="result"></p>
-
-    
+    <div class="container">
+        <h2>Process Bluesky Data</h2>
+        <p>Click the button below to process fitness posts from Bluesky and display the results:</p>
+        <button onclick="processBlueskyData()">Process Bluesky Data</button>
+        <div id="dataResults"></div>
+    </div>
 </body>
 </html>

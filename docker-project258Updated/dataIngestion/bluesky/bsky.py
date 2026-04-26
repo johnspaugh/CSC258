@@ -28,11 +28,12 @@ def get_posts():
     # print("Finished getting posts")
     # print(list)
 
+# will have to comment this area out when running the FastAPI server, since it will be imported as a module and we don't want to run this code on import
+#until we adjust FastAPI to work with the docker file
+# Socket connection code removed - only run when explicitly needed, not at import time
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
-
     posts = get_posts()
-
     for post in posts: 
         s.sendall(post.encode("utf-8"))
         data = s.recv(1024)
