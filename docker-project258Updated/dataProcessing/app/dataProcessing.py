@@ -1,5 +1,6 @@
 import socket
 import json
+import struct
 
 HOST = "0.0.0.0"
 PORT = 5000
@@ -8,13 +9,25 @@ NEXT_HOST = "musclebot"
 NEXT_PORT = 5000
 
 
-def send_json(data, host, port):
+
+def send_json(data, host, port, chunk_size=4096):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
             client.connect((host, port))
-            message = json.dumps(data)
-            client.sendall(message.encode())
-            print(f"[dataProcessing] Sent to {host}:{port}")
+            message = json.dumps(data).encode()
+
+            total_sent = 0
+
+            for i in range(0, len(message), chunk_size):
+                chunk = message[i:i + chunk_size]
+                client.sendall(chunk)
+                total_sent += len(chunk)
+
+            # tell receiver: "I am done sending"
+            client.shutdown(socket.SHUT_WR)
+
+            print(f"[dataProcessing] Sent {total_sent}/{len(message)} bytes to {host}:{port}")
+
     except Exception as e:
         print(f"[dataProcessing] Error sending to {host}:{port}: {e}")
 

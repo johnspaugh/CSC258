@@ -23,7 +23,7 @@ namespace MuscleBot.intake
                 PropertyNameCaseInsensitive = true
             };
 
-            FeedData2? feed = JsonSerializer.Deserialize<FeedData2>(jsonString);
+            FeedData2? feed = JsonSerializer.Deserialize<FeedData2>(jsonString, options);
 
             return feed;
         }
@@ -38,14 +38,13 @@ namespace MuscleBot.intake
         public string status { get; set; } = "";
         public List<Post2> posts { get; set; } = new List<Post2>();
     }
-
     public class Post2
     {
         public string text { get; set; } = "";
         public string display_name { get; set; } = "";
         public string handle { get; set; } = "";
         public string created_at { get; set; } = "";
-        public string? tags { get; set; } = "";
+        public List<string>? tags { get; set; } = null;
     }
 
     public class FeedData
