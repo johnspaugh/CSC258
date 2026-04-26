@@ -19,8 +19,7 @@ bot interface depend on discord permissions and access to Discord account
 
 Setup:
 
-As mentioned, run docker-project258Update
-Navigate to source folder in command line
+As mentioned, navigate to the docker-project258Update folder in the command line
 run docker compose build
 run docker compose up
 Open a Discord server in which your account has sufficient permissions to invite bot and invite MuscleBotTest
@@ -29,6 +28,7 @@ Execution:
 
 The bot currently supports the following commands:
 !test - The bot will respond with "hello [your username]".
+!add [number] [number] - The bot will respond with the sum of the two provided numbers
 !bluesky ingest [keyword] - The bot will search bluesky for posts featuring the keyword and display information about the first result.
 !mastodon ingest - The bot will search Mastodon for posts with the keyword "fitness" and display information about the first result.
 
