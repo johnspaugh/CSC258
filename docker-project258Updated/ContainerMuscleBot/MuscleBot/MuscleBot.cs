@@ -14,12 +14,15 @@ using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace MuscleBotTest
+namespace MuscleBot
 {
-    internal class Program
+    internal class MuscleBot
     {
         static string HOST = "0.0.0.0";
         static int PORT = 5000;
+
+        private static Dictionary<int, CommandContext> PendingRequests = new Dictionary<int, CommandContext>();
+        private static int RequestID = 0;
 
         private static DiscordClient? Client { get; set; }
         private static CommandsNextExtension? Commands { get; set; }
@@ -30,7 +33,6 @@ namespace MuscleBotTest
 
             // Starting Listener
             _ = Listener.Run(HOST, PORT);
-
 
             // Bot Setup
             await reader.ReadJSON();
@@ -57,7 +59,8 @@ namespace MuscleBotTest
             Commands = Client.UseCommandsNext(commandsConfig);
 
             Commands.RegisterCommands<TestCommands>();
-            Commands.RegisterCommands<BlueSkyCommands>();
+            Commands.RegisterCommands<BluSkyCommands>();
+            Commands.RegisterCommands<UserProfileCommands>();
 
             // Run the bot
             await Client.ConnectAsync();
@@ -69,7 +72,36 @@ namespace MuscleBotTest
             return Task.CompletedTask;
         }
 
-        
+        public static int GenerateRequestID(CommandContext commandContext)
+        {
+            int newRequestID = RequestID++;
+            PendingRequests[newRequestID] = commandContext;
 
+            return newRequestID;
+        }
+        public static CommandContext? LookupRequest(int RequestID)
+        {
+            if (PendingRequests.ContainsKey(RequestID) == false)
+            {
+                Console.WriteLine("ERROR: RequestID not found.");
+                return null;
+            }
+
+            return PendingRequests[RequestID];
+        }
+
+        public static CommandContext? CompleteRequest(int RequestID)
+        {
+            if(PendingRequests.ContainsKey (RequestID) == false)
+            {
+                Console.WriteLine("ERROR: RequestID not found.");
+                return null;
+            }    
+
+            CommandContext context = PendingRequests[RequestID];
+            PendingRequests.Remove(RequestID);
+
+            return context;
+        }
     }
 }
