@@ -64,23 +64,22 @@ def handle_incoming(conn, addr):
         print(f"[dataIngestion] Parsed JSON: {data}")
 
         request = data.get("message")
-        if len(request) > 0:
-            print("[dataIngestion] Request received, fetching posts...")
-            posts = get_posts(request)
+        if len(request) == 0:
+            request = "fitness"
+        print("[dataIngestion] Request received, fetching posts...")
+        posts = get_posts(request)
 
-            outgoing = {
-                "message": "ingested",
-                "path": data.get("path", []) + ["dataIngestion"],
-                "iterations": data.get("iterations", 1),
-                "status": "ingested",
-                "posts": posts
-            }
+        outgoing = {
+            "message": "ingested",
+            "path": data.get("path", []) + ["dataIngestion"],
+            "iterations": data.get("iterations", 1),
+            "status": "ingested",
+            "posts": posts
+        }
 
-            print("[dataIngestion] Forwarding to dataProcessing...")
-            send_json(outgoing, NEXT_HOST, NEXT_PORT)
-            print("[dataIngestion] Forward complete")
-        else:
-            print("[dataIngestion] Message was not 'request'")
+        print("[dataIngestion] Forwarding to dataProcessing...")
+        send_json(outgoing, NEXT_HOST, NEXT_PORT)
+        print("[dataIngestion] Forward complete")
 
     except Exception as e:
         print(f"[dataIngestion] Error: {e}")
