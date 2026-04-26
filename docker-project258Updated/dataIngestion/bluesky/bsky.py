@@ -5,10 +5,10 @@ import socket
 HOST = "0.0.0.0"
 PORT = 5000
 
-def get_posts():
+def get_posts(query):
     client = Client()
     client.login('fitnesstracker.bsky.social', 'M+}5aj+C)5,^sU4')
-    posts = client.app.bsky.feed.search_posts({"q": "fitness", "tag": ["fitness"]})
+    posts = client.app.bsky.feed.search_posts({"q": query, "tag": ["fitness"]})
     posts = posts.posts
 
     list = []
@@ -31,7 +31,8 @@ def get_posts():
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
 
-    posts = get_posts()
+    data = s.recv(1024).decode()
+    posts = get_posts(data)
 
     for post in posts: 
         s.sendall(post.encode("utf-8"))

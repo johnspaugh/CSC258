@@ -18,7 +18,7 @@ def send_json(data, host, port):
     except Exception as e:
         print(f"[dataIngestion] Error sending to {host}:{port}: {e}")
 
-def get_posts():
+def get_posts(query="fitness"):
     print("[dataIngestion] Creating Bluesky client...")
     client = Client()
 
@@ -27,8 +27,8 @@ def get_posts():
 
     print("[dataIngestion] Searching posts...")
     response = client.app.bsky.feed.search_posts({
-        "q": "fitness",
-        "tag": ["fitness"]
+        "q": query,
+        "tag": [query]
     })
 
     posts = response.posts
@@ -63,9 +63,10 @@ def handle_incoming(conn, addr):
         data = json.loads(raw_data)
         print(f"[dataIngestion] Parsed JSON: {data}")
 
-        if data.get("message") == "request":
+        request = data.get("message")
+        if len(request) > 0:
             print("[dataIngestion] Request received, fetching posts...")
-            posts = get_posts()
+            posts = get_posts(request)
 
             outgoing = {
                 "message": "ingested",
