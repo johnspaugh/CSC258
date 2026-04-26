@@ -24,7 +24,7 @@ Open a Discord server in which your account has sufficient permissions to invite
 
 
 CONTRIBUTIONS:
-reddit api - Michael
+bluesky api - Michael
     all the threads, for example from the top
     also, priority on the most recent posts
     Not all responses?, more focus post that comes out on tree pre-detrmined phrases
@@ -33,6 +33,7 @@ reddit api - Michael
     Of the gathered data, then take out any other unecessary data
     Then obtain data to to be given to another process.
     Setup of dataNode:[posting username, thread title, thread flare/subheader, thread body ]
+    
 research json -john
     username = string
     date = string
@@ -42,12 +43,14 @@ research json -john
     Given setup of dataNode:[posting username, thread title, thread flare/subheader, thread body ]
     take date node grom Reddit
     print json of data node
+    
 docker network - Nirav
     build the architecture for the dockers initially
     setup the pipleline
     MasterController
     -docker coordinator 
     incorperate blueSky software to received data.
+    
 discord -taro
     discord bot build
     take data and print out on discord through the discord bot
