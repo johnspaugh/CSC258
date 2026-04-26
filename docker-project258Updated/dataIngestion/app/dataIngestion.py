@@ -72,6 +72,7 @@ def handle_incoming(conn, addr):
                 "path": data.get("path", []) + ["dataIngestion"],
                 "iterations": data.get("iterations", 1),
                 "status": "ingested",
+                "requestID": data.get("requestID"),
                 "posts": posts
             }
 
