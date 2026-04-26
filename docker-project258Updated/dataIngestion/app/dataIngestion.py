@@ -69,13 +69,14 @@ def handle_incoming(conn, addr):
         print("[dataIngestion] Request received, fetching posts...")
         posts = get_posts(request)
 
-        outgoing = {
-            "message": "ingested",
-            "path": data.get("path", []) + ["dataIngestion"],
-            "iterations": data.get("iterations", 1),
-            "status": "ingested",
-            "posts": posts
-        }
+            outgoing = {
+                "message": "ingested",
+                "path": data.get("path", []) + ["dataIngestion"],
+                "iterations": data.get("iterations", 1),
+                "status": "ingested",
+                "requestID": data.get("requestID"),
+                "posts": posts
+            }
 
         print("[dataIngestion] Forwarding to dataProcessing...")
         send_json(outgoing, NEXT_HOST, NEXT_PORT)

@@ -1,0 +1,68 @@
+
+Optimizing tool selection...
+
+Checking the web app entrypoint to explain the runtime behavior accurately.
+
+Why the project uses python -m uvicorn web_main:app --reload
+Your web_main.py file defines a FastAPI app object:
+
+app = FastAPI()
+It does not have a if __name__ == "__main__": block to start a server itself.
+So running python web_main.py will only import the file and define app, but it will not start a web server.
+
+Instead, this command does:
+
+python -m uvicorn: run the uvicorn package as a module
+web_main:app: tell Uvicorn to load app from web_main.py
+--reload: enable auto-reload when source files change (useful for development)
+That is why the documented command works, while python web_main.py does not.
+
+What venv and pyvenv.cfg are for
+venv
+A venv folder is a Python virtual environment.
+
+It provides:
+
+isolated package installation
+its own python executable
+a clean environment separate from global Python
+This helps avoid package version conflicts between projects.
+
+pyvenv.cfg
+This file lives inside the venv folder and is created by Python when you make the environment.
+
+It contains metadata such as:
+
+the base Python interpreter
+environment settings
+whether system site-packages are visible
+It is not something you run directly. It is just a configuration file for the virtual environment.
+
+Why use a virtual environment instead of global Python
+Because your app depends on packages like:
+
+fastapi
+uvicorn
+Using a venv ensures:
+
+the right versions are installed
+you do not interfere with other Python projects
+python -m uvicorn runs using the same environment
+If you want to run it locally
+Create the virtual environment once:
+
+python -m venv venv
+Activate it:
+
+Windows PowerShell: .\venv\Scripts\Activate.ps1
+Windows Command Prompt: .\venv\Scripts\activate.bat
+Install dependencies:
+
+python -m pip install fastapi uvicorn
+Run the app:
+
+python -m uvicorn web_main:app --reload
+Could python web_main.py work?
+Yes, but only if you add a startup block like:
+
+Until that is added, python web_main.py will not start the FastAPI server.

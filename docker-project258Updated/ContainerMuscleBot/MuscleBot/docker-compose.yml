@@ -1,7 +1,0 @@
-services:
-  musclebot:
-    build: .
-    container_name: musclebot
-    restart: unless-stopped
-    volumes:
-      - ./config/config.json:/app/config/config.json
