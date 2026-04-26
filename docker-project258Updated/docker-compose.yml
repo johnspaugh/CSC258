@@ -6,7 +6,6 @@ services:
       dockerfile: Dockerfile
     container_name: musclebot
     depends_on:
-      - dataingestion
       - dataprocessing
     restart: unless-stopped
     volumes:
@@ -20,14 +19,13 @@ services:
     container_name: userprofileservice
     restart: unless-stopped
 
+
   # Service to manages Ingestion of feeds from a given social medial outlet
-  dataingestion:
+  dataingestionbluesky:
     build:
-      context: ./dataingestion
+      context: ./dataingestionbluesky
       dockerfile: Dockerfile
-    container_name: dataingestion
-    ports:
-      - "5000:5000"
+    container_name: dataingestionbluesky
     restart: unless-stopped
 
   dataingestionmastodon:
@@ -35,8 +33,6 @@ services:
       context: ./dataIngestionMastodon
       dockerfile: Dockerfile
     container_name: dataingestionmastodon
-    ports:
-      - "5000:5000"
     restart: unless-stopped
     
   # Service to processes feeds into a digestable form

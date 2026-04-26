@@ -1,19 +1,24 @@
-﻿using System.Net;
+﻿using Microsoft.Data.Sqlite;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 
-public static class UserProfileService
+public class UserProfileService
 {
     static string HOST = "0.0.0.0";
     static int PORT = 5000;
 
     static async Task Main(string[] args)
     {
+        // Start Listening for tasks
         TcpListener listener = new TcpListener(IPAddress.Parse(HOST), PORT);
         listener.Start();
-
         Console.WriteLine($"UserProfileService is listening...");
+
+        // Generate database if it doersnt exist
+        SQL.CreateUserProfileDatabase();
+        Console.WriteLine($"Generated User Profile Database...");
 
         while (true)
         {
@@ -65,8 +70,6 @@ public static class UserProfileService
         }
     }
 }
-
-
 
 public class UserProfileCommandMessage()
 {

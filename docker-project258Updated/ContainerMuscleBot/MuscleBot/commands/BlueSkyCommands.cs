@@ -7,16 +7,17 @@ using System.Text;
 using System.Text.Json;
 
 namespace MuscleBot.commands
-{ 
-    public class BluSkyCommands : BaseCommandModule
+{
+    [Group("bluesky")]
+    public class BlueSkyCommands : BaseCommandModule
     {
-        static string BLUESKY_HOST = "dataingestion"; // change if outside docker
+        static string BLUESKY_HOST = "dataingestionbluesky"; // change if outside docker
         static int BLUESKY_PORT = 5000;
 
         public static CommandContext? currentContext;
 
         [Command("ingest")]
-        public async Task IngestBlueSky(CommandContext ctx)
+        public async Task IngestBlueSky(CommandContext ctx, string keyword)
         {
             try
             {
@@ -24,6 +25,7 @@ namespace MuscleBot.commands
                 {
                     // Create a default test command for now
                     CommandMessage commandMessage = new CommandMessage();
+                    commandMessage.message = keyword;
 
                     // Convert message to bytes
                     string json = JsonSerializer.Serialize(commandMessage);
@@ -34,7 +36,7 @@ namespace MuscleBot.commands
                     stream.Write(bytes, 0, bytes.Length);
 
                     // Saved context
-                    currentContext = ctx;
+                    MuscleBot.TEMP = ctx;
 
                     Console.WriteLine($"Stored channel: {ctx.Channel.Id}");
 

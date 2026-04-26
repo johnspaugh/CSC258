@@ -34,7 +34,6 @@ namespace MuscleBot.commands
         public string? command { get; set; } = null;
         public string? username { get; set; } = null;
         public string? message { get; set; } = null;
-
         public int requestID { get; set; } = -1;
     }
 

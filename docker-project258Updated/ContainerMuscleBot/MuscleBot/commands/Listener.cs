@@ -61,7 +61,7 @@ namespace MuscleBot.commands
             using JsonDocument doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
 
-            // Check if the Json is a BluSky Messagea
+            // Check if the Json is a Feed Message
             if (root.TryGetProperty("posts", out _))
             {
                 var feed = FeedReader.DeserializeFeed2(json);
@@ -69,11 +69,11 @@ namespace MuscleBot.commands
                 if (feed is not null && feed.posts.Count > 0)
                 {
                     Console.WriteLine($"Sending Feed to Discord Client.");
-                    var bluSkyContext = BluSkyCommands.currentContext;
+                    var discordContext = MuscleBot.TEMP;
 
-                    if (bluSkyContext is not null)
+                    if (discordContext is not null)
                     {
-                        await bluSkyContext.Channel.SendMessageAsync(
+                        await discordContext.Channel.SendMessageAsync(
                             $"Display Name: {feed.posts[0].display_name}\n" +
                             $"Handle: {feed.posts[0].handle}\n" +
                             $"CreatedAt: {feed.posts[0].created_at}\n" +

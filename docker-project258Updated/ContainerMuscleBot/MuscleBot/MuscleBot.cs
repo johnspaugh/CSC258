@@ -27,6 +27,8 @@ namespace MuscleBot
         private static DiscordClient? Client { get; set; }
         private static CommandsNextExtension? Commands { get; set; }
 
+        public static CommandContext TEMP { get; set; }
+
         static async Task Main(string[] args)
         {
             JSONReader reader = new JSONReader();
@@ -59,7 +61,8 @@ namespace MuscleBot
             Commands = Client.UseCommandsNext(commandsConfig);
 
             Commands.RegisterCommands<TestCommands>();
-            Commands.RegisterCommands<BluSkyCommands>();
+            Commands.RegisterCommands<BlueSkyCommands>();
+            Commands.RegisterCommands<MastodonCommands>();
             Commands.RegisterCommands<UserProfileCommands>();
 
             // Run the bot
