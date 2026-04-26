@@ -19,6 +19,7 @@ bot interface depend on discord permissions and access to Discord account
 
 Setup:
 
+Ensure Discord API key is properly placed in \ContainerMuscleBot\MuscleBot\config\config.json, it must be placed manually because Discord deactivates API keys which are shared online as a security measure.
 As mentioned, navigate to the docker-project258Update folder in the command line
 run docker compose build
 run docker compose up
