@@ -6,6 +6,23 @@ Taro Kumagai
 Michael Robertson
 Niravkumar Tandel 
 
+Structure requires docker-project258Update to run its docker first,
+ which will call on other dockers to run their applications inside.
+
+Dependencies and evironment,
+Web Interface depends on FASTAPI and venv
+docker depends on compose.yml for its build
+bot interface depend on discord permissions and access to Discord account
+
+Setup
+
+As mentioned, run docker-project258Update
+Navigate to source folder in command line
+run docker compose build
+run docker compose up
+Open a Discord server in which your account has sufficient permissions to invite bot and invite MuscleBotTest
+
+
 CONTRIBUTIONS:
 reddit api - Michael
     all the threads, for example from the top
