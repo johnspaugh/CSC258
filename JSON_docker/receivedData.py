@@ -155,7 +155,7 @@ def get_processed_data_json():
 # Main execution
 # Construct path to MichealSampleData.md
 current_dir = Path(__file__).parent
-sample_data_path = current_dir.parent / "Bot_docker" / "MichealSampleData.md"
+sample_data_path = current_dir.parent / "JSON_docker" / "MichealSampleData.md"
 
 # Read and process data
 raw_text_data = read_and_parse_sample_data(str(sample_data_path))
