@@ -18,11 +18,7 @@ namespace MuscleBot.intake
 
         public static FeedData2? DeserializeFeed2(string jsonString)
         {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-
+            var options = new JsonSerializerOptions{PropertyNameCaseInsensitive = true};
             FeedData2? feed = JsonSerializer.Deserialize<FeedData2>(jsonString, options);
 
             return feed;
