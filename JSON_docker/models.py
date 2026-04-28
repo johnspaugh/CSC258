@@ -28,6 +28,19 @@ class ReplyRef:
     root: Main
 
 @dataclass
+class CommandMessage:
+    """Mirrors CommandMessage in ContainerMuscleBot/MuscleBot/commands/Commands.cs"""
+    message: str = "request"
+    requestID: int = -1
+    path: List[str] = None
+    iterations: int = 1
+    status: str = "requested"
+
+    def __post_init__(self):
+        if self.path is None:
+            self.path = ["dataRequest"]
+
+@dataclass
 class DataModelRetrieved:
     """DataModelRetrieved taking out specify data from the documents"""
     display_name: str

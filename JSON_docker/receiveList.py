@@ -8,14 +8,12 @@ from pathlib import Path
 from models import DataModelRetrieved, ReplyRef, Main
 from dataclasses import asdict
 
-# from dataIngestion.app.test import get_posts
-# from dataIngestion.bluesky.bsky import get_posts
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.append(str(ROOT / "docker-project258Updated" / "dataIngestion" / "bluesky"))
-from bsky import get_posts
+# sys.path.append(str(ROOT / "docker-project258Updated" / "dataIngestionBluesky" / "bluesky"))
+# from bsky import get_posts
 
 # Global variable to store the JSON formatted data
 processed_data_json = None
@@ -219,6 +217,54 @@ def get_processed_data_json():
     global processed_data_json
     return processed_data_json
 
+def process_data(raw_text_data):
+    """
+    Process posts like Bluesky data these piplines can be used for other data sources as well,
+    not just bluesky, as long as the raw text data is in a compatible format
+    Returns the processed JSON data
+    """
+    try:
+        # Get posts from Bluesky
+        # raw_text_data = get_posts()
+        
+        if raw_text_data:
+            extracted_vars = []
+            filtered_vars = []
+            
+            # Process each post
+            for post in raw_text_data:
+                # Extract fields from raw text
+                extracted = extract_fields_from_text(post)
+                extracted_vars.append(extracted)
+                
+                # Filter into DataModelRetrieved objects
+                filtered_vars.extend(filter_to_data_model(extracted))
+            
+        print(f"Processed {len(filtered_vars)} records into DataModelRetrieved objects")
+        print(f"Data converted to JSON format and stored in global variable")
+        # Convert to JSON and store in global variable
+        json_data = convert_to_json(filtered_vars)    
+        # json_data = convert_to_json(extracted_vars)
+
+        # Display first record if available
+        if filtered_vars:
+            print("\nFinished processing data.")
+            # Show a preview of the JSON
+            if json_data:
+                print("\nJSON preview (first 200 characters):")
+                print(json_data[:200] + "..." if len(json_data) > 200 else json_data)
+
+            #  for testing and debugging, print the first extracted variable, first filtered variable, and the JSON data
+            # print(extracted_vars[0])
+            # print(filtered_vars[0])
+            # print(json_data)
+
+        return json_data
+    except Exception as e:
+        print(f"Error processing data: {e}")
+        return None
+        
+
 # Main execution
 # Construct path to MichealSampleData.md
 current_dir = Path(__file__).parent
@@ -228,46 +274,13 @@ sample_data_path = current_dir.parent / "JSON_docker" / "M2SampleData.md"
 # Read and process data
 # raw_text_data = read_and_parse_sample_data(str(sample_data_path))
 #when we incoprate bsky.py, we can replace the above line with raw_text_data = get_posts() to read from bluesky instead of M2SampleData.md
-raw_text_data = get_posts()
+raw_text_data =[] # get_posts()
 
-if raw_text_data:
-    extracted_vars = []
-    filtered_vars = []
-    for post in raw_text_data:
-        # Extract fields from raw text
-        extracted = extract_fields_from_text(post)
-        extracted_vars.append(extracted)
-        
-        # Filter into DataModelRetrieved objects
-        # filtered_vars.append(filter_to_data_model(extracted))
-        filtered_vars.extend(filter_to_data_model(extracted))
+json_data =process_data(raw_text_data)
     
-    # Convert to JSON and store in global variable
-    json_data = convert_to_json(filtered_vars)    
-    # json_data = convert_to_json(extracted_vars)
     
-    print(f"Processed {len(filtered_vars)} records into DataModelRetrieved objects")
-    print(f"Data converted to JSON format and stored in global variable")
-    
-    # Display first record if available
-    if filtered_vars:
-        print("\nFirst record:")
-        # print(f"  Handle: {filtered_vars[0].handle}")
-        # print(f"  Display Name: {filtered_vars[0].display_name}")
-        # print(f"  Text: {filtered_vars[0].text}")
-        # print(f"  Created At: {filtered_vars[0].created_at}")
-        # print(f"  Indexed At: {filtered_vars[0].indexed_at}")
-        
-        # Show a preview of the JSON
-        if json_data:
-            print("\nJSON preview (first 200 characters):")
-            print(json_data[:200] + "..." if len(json_data) > 200 else json_data)
-
-        print("\nFinished processing data.")
-        print(extracted_vars[0])
-        print(filtered_vars[0])
-        # print(json_data)
-        # To verify the JSON structure, we can parse it back to a Python object and print the first item
-        parsed = json.loads(json_data)
-        print(parsed[0]["display_name"])
-        print(parsed[0])
+# To verify the JSON structure, we can parse it back to a Python object and print the first item
+parsed = json.loads(json_data)
+print(parsed[0]["display_name"])
+print("\nFirst record:")
+print(parsed[0])

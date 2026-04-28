@@ -9,13 +9,17 @@
 # python -m venv venv
 # pip show uvicorn
 import json
+import socket
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.append(str(ROOT / "docker-project258Updated" / "dataIngestion" / "bluesky"))
+# sys.path.append(str(ROOT / "docker-project258Updated" / "dataIngestionBluesky" / "bluesky"))
 sys.path.append(str(ROOT))  # Add JSON_docker directory to path
 
+from receiveList import process_data
+from models import CommandMessage
+from dataclasses import asdict
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -58,6 +62,27 @@ except ImportError:
     convert_to_json = receiveList.convert_to_json
     get_processed_data_json = receiveList.get_processed_data_json
 
+@app.get("/api/get-process-data")
+def get_process_data(datapoint: str = "fitness"):
+    HOST = "dataingestionbluesky"#"0.0.0.0"
+    PORT = 5000
+    posts = []
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
+        # message = asdict(CommandMessage(message="ingest"))
+        message = asdict(CommandMessage(message=datapoint))
+        s.sendall(json.dumps(message).encode("utf-8"))
+        while True:
+            data = s.recv(1024)
+            if not data:
+                break
+            posts.append(data.decode("utf-8"))
+        # posts = get_posts()
+    s.close()
+
+    return posts
+# {"message": "This endpoint will process Bluesky data and return the processed JSON. Implementation is in progress."}
+
 @app.get("/api/process-bluesky-data")
 def process_bluesky_data():
     """
@@ -65,30 +90,19 @@ def process_bluesky_data():
     Returns the processed JSON data
     """
     try:
-        # Get posts from Bluesky
-        raw_text_data = get_posts()
+        # Get posts from like Bluesky
+        # raw_text_data = get_posts()
+        raw_text_data = get_process_data("fitness")
         
         if raw_text_data:
-            extracted_vars = []
-            filtered_vars = []
             
-            # Process each post
-            for post in raw_text_data:
-                # Extract fields from raw text
-                extracted = extract_fields_from_text(post)
-                extracted_vars.append(extracted)
-                
-                # Filter into DataModelRetrieved objects
-                filtered_vars.extend(filter_to_data_model(extracted))
-            
-            # Convert to JSON and store in global variable
-            json_data = convert_to_json(filtered_vars)
-            
-            if json_data:
+            json_data =process_data(raw_text_data)
+            parsed = json.loads(json_data)
+            if parsed:
                 return {
                     "success": True,
-                    "record_count": len(filtered_vars),
-                    "processed_data": json.loads(json_data)
+                    "record_count": len(parsed),
+                    "processed_data": parsed
                 }
             else:
                 return {"success": False, "error": "Failed to convert data to JSON"}
@@ -107,3 +121,5 @@ def get_processed_data():
         return {"processed_data": json.loads(json_data)}
     else:
         return {"error": "Processed data not available"}
+
+
