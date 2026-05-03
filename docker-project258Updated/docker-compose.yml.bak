@@ -1,0 +1,44 @@
+services:
+  # Discord Bot serving as main terminal for the user
+  musclebot:
+    build:
+      context: ./ContainerMuscleBot/MuscleBot
+      dockerfile: Dockerfile
+    container_name: musclebot
+    depends_on:
+      - dataprocessing
+    restart: unless-stopped
+    volumes:
+      - ./ContainerMuscleBot/MuscleBot/config:/app/config
+
+  # Service to manages all interactions in regards to user profiles for our API
+  userprofileservice:
+    build:
+      context: ./ContainerUserProfile/UserProfileService
+      dockerfile: Dockerfile
+    container_name: userprofileservice
+    restart: unless-stopped
+
+
+  # Service to manages Ingestion of feeds from a given social medial outlet
+  dataingestionbluesky:
+    build:
+      context: ./dataingestionbluesky
+      dockerfile: Dockerfile
+    container_name: dataingestionbluesky
+    restart: unless-stopped
+
+  dataingestionmastodon:
+    build:
+      context: ./dataIngestionMastodon
+      dockerfile: Dockerfile
+    container_name: dataingestionmastodon
+    restart: unless-stopped
+    
+  # Service to processes feeds into a digestable form
+  dataprocessing:
+    build:
+      context: ./dataprocessing
+      dockerfile: Dockerfile
+    container_name: dataprocessing
+    restart: unless-stopped

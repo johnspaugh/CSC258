@@ -16,12 +16,14 @@ INSTANCE = "https://mastodon.world"
 def recv_json(conn):
     chunks = []
 
+    # receive chunks until data message complete
     while True:
         chunk = conn.recv(4096)
         if not chunk:
             break
         chunks.append(chunk)
-
+    
+    # Deserialize
     raw_data = b"".join(chunks).decode("utf-8")
     return json.loads(raw_data)
 
@@ -29,6 +31,7 @@ def recv_json(conn):
 def send_json(data, host, port, retries=10, delay=1):
     for attempt in range(1, retries + 1):
         try:
+            # Connect and send to discord client
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
                 client.connect((host, port))
                 message = json.dumps(data)
@@ -45,6 +48,7 @@ def send_json(data, host, port, retries=10, delay=1):
 HASHTAG = "fitness"
 
 def pull_mastodon_posts(limit=10):
+    # Send Mastodon request
     response = requests.get(
         f"{INSTANCE}/api/v1/timelines/tag/{HASHTAG}",
         params={"limit": limit},
@@ -56,6 +60,7 @@ def pull_mastodon_posts(limit=10):
 
     normalized_posts = []
 
+    # Build mastodon data
     for post in posts:
         clean_text = BeautifulSoup(
             post["content"],

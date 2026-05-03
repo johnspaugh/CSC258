@@ -15,9 +15,11 @@ namespace MuscleBot.commands
 
         static public async Task Run(string HOST, int PORT)
         {
+            // Start Listener
             TcpListener listener = new TcpListener(IPAddress.Parse(HOST), PORT);
             listener.Start();
 
+            // Continue running while app is active
             while (listenerRunning)
             {
                 var client = await listener.AcceptTcpClientAsync();
@@ -29,6 +31,7 @@ namespace MuscleBot.commands
         {
             try
             {
+                // Setting up stream
                 using var stream = client.GetStream();
                 using var ms = new MemoryStream();
 
@@ -66,11 +69,13 @@ namespace MuscleBot.commands
             {
                 var feed = FeedReader.DeserializeFeed2(json);
 
+                // Check feed
                 if (feed is not null && feed.posts.Count > 0)
                 {
                     Console.WriteLine($"Sending Feed to Discord Client.");
                     var discordContext = MuscleBot.TEMP;
 
+                    // Send response on discord
                     if (discordContext is not null)
                     {
                         await discordContext.Channel.SendMessageAsync(
@@ -88,10 +93,12 @@ namespace MuscleBot.commands
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 UserProfileCommandMessage? userProfileCommandMessage = JsonSerializer.Deserialize<UserProfileCommandMessage>(json, options);
 
+                // Check response from the User profile service 
                 if (userProfileCommandMessage is not null)
                 {
                     CommandContext? ctx = MuscleBot.LookupRequest(userProfileCommandMessage.requestID);
-                    Console.WriteLine("test.");
+
+                    // Send response on discord
                     if (ctx is not null)
                         await ctx.Channel.SendMessageAsync(userProfileCommandMessage.message);
                 }

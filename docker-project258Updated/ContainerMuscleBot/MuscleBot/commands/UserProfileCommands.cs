@@ -24,8 +24,10 @@ namespace MuscleBot.commands
             message.username = ctx.User.Username;
             message.requestID = MuscleBot.GenerateRequestID(ctx); 
 
+            // Send messige to user profile service
             string discordMessage = Utility.SendCommandMessage(ctx, message, USERPROFILE_HOST, USERPROFILE_PORT);
 
+            // Notify that the regist request was sent
             await ctx.Channel.SendMessageAsync(discordMessage);
         }
     }
