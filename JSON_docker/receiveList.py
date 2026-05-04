@@ -18,37 +18,25 @@ ROOT = Path(__file__).resolve().parent.parent
 # Global variable to store the JSON formatted data
 processed_data_json = None
 
-# ------------------------------------------------
-#list = get_posts() is stolen from bsky.py, create and will read from M2SampleData.md
-# from atproto import Client, client_utils
-# # import json
-# # import socket
-# # HOST = "127.0.0.1"  # "0.0.0.0"
-# # PORT = 5000
-# def get_posts():
+from atproto import Client
+
+# def get_posts(query="fitness"):
 #     client = Client()
 #     client.login('fitnesstracker.bsky.social', 'M+}5aj+C)5,^sU4')
-#     posts = client.app.bsky.feed.search_posts({"q": "fitness", "tag": ["fitness"]})
-#     posts = posts.posts
+#     response = client.app.bsky.feed.search_posts({"q": query, "tag": [query]})
+#     posts = response.posts
 
-#     list = []
-
+#     result = []
 #     for post in posts:
 #         obj = {}
-#         obj["text"] = post.record.text
-#         obj["display_name"] = post.author.display_name
-#         obj["handle"] = post.author.handle
-#         obj["created_at"] = post.author.created_at
-#         obj["tags"] = post.record.tags
-#         list.append(json.dumps(obj))
+#         obj["text"] = getattr(post.record, "text", "")
+#         obj["display_name"] = getattr(post.author, "display_name", "")
+#         obj["handle"] = getattr(post.author, "handle", "")
+#         obj["created_at"] = getattr(post.author, "created_at", "")
+#         obj["tags"] = getattr(post.record, "tags", None)
+#         result.append(json.dumps(obj))
 
-#     print(f"Extracted {len(list)} posts")
-#     print(list)
-#     print("Finished extracting posts")
-#     print("first post: ", list[0])
-#     return list
-#used as a reference for the above code, will be used to read from M2SampleData.md instead of bluesky
-#------------------------------------------------
+#     return result
 
 # Read data from MichealSampleData.md or M2SampleData.md depend on the file_path provided
 def read_and_parse_sample_data(file_path):
@@ -227,10 +215,10 @@ def process_data(raw_text_data):
         # Get posts from Bluesky
         # raw_text_data = get_posts()
         
+        extracted_vars = []
+        filtered_vars = []
+
         if raw_text_data:
-            extracted_vars = []
-            filtered_vars = []
-            
             # Process each post
             for post in raw_text_data:
                 # Extract fields from raw text
@@ -240,11 +228,15 @@ def process_data(raw_text_data):
                 # Filter into DataModelRetrieved objects
                 filtered_vars.extend(filter_to_data_model(extracted))
             
-        print(f"Processed {len(filtered_vars)} records into DataModelRetrieved objects")
-        print(f"Data converted to JSON format and stored in global variable")
-        # Convert to JSON and store in global variable
-        json_data = convert_to_json(filtered_vars)    
-        # json_data = convert_to_json(extracted_vars)
+        if filtered_vars:
+            print(f"Processed {len(filtered_vars)} records into DataModelRetrieved objects")
+            print(f"Data converted to JSON format and stored in global variable")
+            # Convert to JSON and store in global variable
+            json_data = convert_to_json(filtered_vars)    
+            # json_data = convert_to_json(extracted_vars)
+        else:
+            print("No valid data to process in filtered_vars, likely is empty")
+            json_data = None
 
         # Display first record if available
         if filtered_vars:
@@ -280,7 +272,8 @@ json_data =process_data(raw_text_data)
     
     
 # To verify the JSON structure, we can parse it back to a Python object and print the first item
-parsed = json.loads(json_data)
-print(parsed[0]["display_name"])
-print("\nFirst record:")
-print(parsed[0])
+if json_data:
+    parsed = json.loads(json_data)
+    print(parsed[0]["display_name"])
+    print("\nFirst record:")
+    print(parsed[0])

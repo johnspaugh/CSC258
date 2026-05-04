@@ -107,8 +107,10 @@ def handle_incoming(conn, addr):
         }
 
         send_json(output, NEXT_HOST, NEXT_PORT)
-
         print("[dataIngestionMastodon] Forward complete")
+
+        #added for theFastAPI endpoint
+        conn.sendall(json.dumps(posts).encode())
 
     except Exception as e:
         print(f"[dataIngestionMastodon] Error: {e}")

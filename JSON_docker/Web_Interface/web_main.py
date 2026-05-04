@@ -9,6 +9,7 @@
 # python -m venv venv
 # pip show uvicorn
 import json
+import os
 import socket
 import sys
 from pathlib import Path
@@ -17,7 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # sys.path.append(str(ROOT / "docker-project258Updated" / "dataIngestionBluesky" / "bluesky"))
 sys.path.append(str(ROOT))  # Add JSON_docker directory to path
 
-from receiveList import process_data
+from receiveList import get_processed_data_json, process_data
 from models import CommandMessage
 from dataclasses import asdict
 from fastapi import FastAPI
@@ -40,59 +41,52 @@ def hello(name: str = "World"):
     return {"message": f"Hello, {name}!"}
 
 # call on dataIngestion to get the processed data in JSON format
-
-# Import functions from receiveList to process Bluesky data
-try:
-    from receiveList import (
-        get_posts,
-        extract_fields_from_text,
-        filter_to_data_model,
-        convert_to_json,
-        get_processed_data_json
-    )
-except ImportError:
-    # Fallback: import from parent directory
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("receiveList", str(ROOT / "receiveList.py"))
-    receiveList = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(receiveList)
-    get_posts = receiveList.get_posts
-    extract_fields_from_text = receiveList.extract_fields_from_text
-    filter_to_data_model = receiveList.filter_to_data_model
-    convert_to_json = receiveList.convert_to_json
-    get_processed_data_json = receiveList.get_processed_data_json
-
-@app.get("/api/get-process-data")
-def get_process_data(datapoint: str = "fitness"):
-    HOST = "dataingestionbluesky"#"0.0.0.0"
-    PORT = 5000
-    posts = []
+def _recv_posts(host, port, message_dict):
+    chunks = []
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
-        # message = asdict(CommandMessage(message="ingest"))
-        message = asdict(CommandMessage(message=datapoint))
-        s.sendall(json.dumps(message).encode("utf-8"))
+        s.connect((host, port))
+        s.sendall(json.dumps(message_dict).encode("utf-8"))
+        #socket.SHUT_WR closes only the sending side — 
+        # the socket stays open for reading the response. 
+        # This is the standard pattern for half-close: "I'm done sending, now I'll just listen."
+        s.shutdown(socket.SHUT_WR)
         while True:
-            data = s.recv(1024)
+            data = s.recv(4096)
             if not data:
                 break
-            posts.append(data.decode("utf-8"))
-        # posts = get_posts()
-    s.close()
+            chunks.append(data.decode("utf-8"))
+    full = "".join(chunks)
+    if not full:
+        return []
+    posts = json.loads(full)
+    return [json.dumps(post) for post in posts]
 
-    return posts
+@app.get("/api/get-bluesky-data")
+def get_bluesky_data(datapoint: str = "fitness"):
+    HOST = os.environ.get("INGEST_Bluesky_HOST", "localhost")
+    message = asdict(CommandMessage(message="bluesky"))
+    return _recv_posts(HOST, 5000, message)
+
+@app.get("/api/get-mastodon-data")
+def get_mastodon_data(datapoint: str = "fitness"):
+    HOST = os.environ.get("INGEST_Mastodon_HOST", "localhost")
+    message = asdict(CommandMessage(message="mastodon"))
+    return _recv_posts(HOST, 5000, message)
 # {"message": "This endpoint will process Bluesky data and return the processed JSON. Implementation is in progress."}
 
-@app.get("/api/process-bluesky-data")
-def process_bluesky_data():
+@app.get("/api/process-data")
+def get_process_data(datasource: str, typeDataSelected: str):
     """
-    Process Bluesky posts data through the receiveList pipeline
+    Process  posts data from Bluesky or Mastodon through the receiveList pipeline
     Returns the processed JSON data
     """
     try:
-        # Get posts from like Bluesky
-        # raw_text_data = get_posts()
-        raw_text_data = get_process_data("fitness")
+        
+        raw_text_data = []
+        if datasource == "mastodon":
+            raw_text_data = get_mastodon_data(typeDataSelected)
+        else: #elif datasource == "bluesky":
+            raw_text_data = get_bluesky_data(typeDataSelected)
         
         if raw_text_data:
             

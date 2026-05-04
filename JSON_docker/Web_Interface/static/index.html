@@ -95,12 +95,19 @@
         document.getElementById("result").innerText = data.message;
     }
 
-    async function processBlueskyData() {
-        const resultDiv = document.getElementById("dataResults");
-        resultDiv.innerHTML = '<p class="loading">Processing Bluesky data...</p>';
+    async function processData(datasource) {
+        typeDataSelected = "fitness"; // You can modify this to allow user selection of data type
+        if (datasource === "bluesky") {
+            blueskyOrMastodonResults = document.getElementById("dataResults");
+        } else if (datasource === "mastodon") {
+            blueskyOrMastodonResults = document.getElementById("dataResultsMastodon");
+        }
+        // const resultDiv = document.getElementById("dataResults");
+        const resultDiv = blueskyOrMastodonResults;
+        resultDiv.innerHTML = '<p class="loading">Processing ' + datasource + ' data...</p>';
         
         try {
-            const response = await fetch('/api/process-bluesky-data');
+            const response = await fetch('/api/process-data?datasource=' + datasource + '&typeDataSelected=' + typeDataSelected);
             const data = await response.json();
             
             if (data.success) {
@@ -138,17 +145,23 @@
     <div class="container">
         <h1>FastAPI Interface to Access Fitness Searches in Posts</h1>
         
-        <h2>Say Hello</h2>
+        <!-- <h2>Say Hello</h2>
         <input type="text" id="nameInput" placeholder="Enter your name">
         <button onclick="callAPI()">Say Hello</button>
-        <p id="result"></p>
+        <p id="result"></p> -->
     </div>
 
     <div class="container">
         <h2>Process Bluesky Data</h2>
         <p>Click the button below to process fitness posts from Bluesky and display the results:</p>
-        <button onclick="processBlueskyData()">Process Bluesky Data</button>
+        <button onclick="processData('bluesky')">Process Bluesky Data</button>
         <div id="dataResults"></div>
+    </div>
+    <div class="container">
+        <h2>Process Mastodon Data</h2>
+        <p>Click the button below to process fitness posts from Mastodon and display the results:</p>
+        <button onclick="processData('mastodon')">Process Mastodon Data</button>
+        <div id="dataResultsMastodon"></div>
     </div>
 </body>
 </html>
