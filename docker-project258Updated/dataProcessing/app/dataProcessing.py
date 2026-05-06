@@ -57,13 +57,15 @@ def handle_incoming(conn, addr):
 
         if "path" not in data:
             data["path"] = []
-        
         # Update log data
         data["path"].append("dataProcessing")
         data["status"] = "processed"
         data["processed_by"] = "dataProcessing"
 
-        send_json(data, NEXT_HOST, NEXT_PORT)
+        if "webinterface" in data["path"]:
+            send_json(data, "webinterface", NEXT_PORT)
+        else:
+            send_json(data, NEXT_HOST, NEXT_PORT)
 
     except Exception as e:
         print(f"[dataProcessing] Error handling message: {e}")
