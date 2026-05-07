@@ -43,19 +43,10 @@ services:
       dockerfile: Dockerfile
     container_name: dataprocessing
     restart: unless-stopped
-
-  # Web interface for viewing processed Bluesky data
-  webinterface:
-    build:
-      context: ../JSON_docker
-      dockerfile: Web_Interface/Dockerfile
-    container_name: webinterface
-    ports:
-      - "8000:8000"
-    environment:
-      - INGEST_Bluesky_HOST=dataingestionbluesky
-      - INGEST_Mastodon_HOST=dataingestionmastodon
-    depends_on:
-      - dataingestionbluesky
-      - dataingestionmastodon
-    restart: unless-stopped
+    
+  # 
+  logdatabase:
+    build: ./ContainerLogDatabase
+    container_name: logdatabase
+    volumes:
+      - ./Databases:/app/data

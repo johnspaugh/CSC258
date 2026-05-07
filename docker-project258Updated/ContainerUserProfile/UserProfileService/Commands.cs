@@ -33,6 +33,9 @@ public static class Commands
 
             sqlCommand.Parameters.AddWithValue("$username", receivedMessage.username);
             sqlCommand.ExecuteNonQuery();
+
+            // Build resposne messgae
+            commandMessage.message = receivedMessage.username + " has been registered.";
         }
 
         // Send Response back to discord

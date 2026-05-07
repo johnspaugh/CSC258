@@ -6,6 +6,7 @@ using MuscleBot.config;
 using MuscleBot.intake;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Formats.Asn1;
 using System.Linq;
 using System.Net;
@@ -18,8 +19,8 @@ namespace MuscleBot
 {
     internal class MuscleBot
     {
-        static string HOST = "0.0.0.0";
-        static int PORT = 5000;
+        static readonly string HOST = "0.0.0.0";
+        static readonly int PORT = 5000;
 
         private static Dictionary<int, CommandContext> PendingRequests = new Dictionary<int, CommandContext>();
         private static int RequestID = 0;
@@ -27,17 +28,15 @@ namespace MuscleBot
         private static DiscordClient? Client { get; set; }
         private static CommandsNextExtension? Commands { get; set; }
 
-        public static CommandContext TEMP { get; set; }
-
         static async Task Main(string[] args)
         {
-            JSONReader reader = new JSONReader();
+            ConfigHandler reader = new ConfigHandler();
 
             // Starting Listener
             _ = Listener.Run(HOST, PORT);
 
             // Bot Setup
-            await reader.ReadJSON();
+            await reader.LoadConfig();
 
             DiscordConfiguration discordConfig = new DiscordConfiguration()
             {
@@ -59,7 +58,8 @@ namespace MuscleBot
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
-
+            
+            // Registering all discord command groups
             Commands.RegisterCommands<TestCommands>();
             Commands.RegisterCommands<BlueSkyCommands>();
             Commands.RegisterCommands<MastodonCommands>();
@@ -84,6 +84,7 @@ namespace MuscleBot
         }
         public static CommandContext? LookupRequest(int RequestID)
         {
+            // Check for valid request ID
             if (PendingRequests.ContainsKey(RequestID) == false)
             {
                 Console.WriteLine("ERROR: RequestID not found.");
@@ -93,15 +94,19 @@ namespace MuscleBot
             return PendingRequests[RequestID];
         }
 
-        public static CommandContext? CompleteRequest(int RequestID)
+        public static CommandContext? PopRequest(int RequestID)
         {
+            // Check for valid request ID
             if(PendingRequests.ContainsKey (RequestID) == false)
             {
-                Console.WriteLine("ERROR: RequestID not found.");
+                Console.WriteLine($"ERROR: RequestID ({RequestID}) not found.");
                 return null;
-            }    
+            }
 
+            // Obtain discord context matching with the request ID
             CommandContext context = PendingRequests[RequestID];
+
+            // Request complete and no longer pending
             PendingRequests.Remove(RequestID);
 
             return context;

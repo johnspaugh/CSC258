@@ -16,7 +16,7 @@ namespace MuscleBot.commands
         public int requestID { get; set; } = -1;
 
         // Data Logging 
-        public string[] path { get; set; } = new string[] { "dataRequest" };
+        public string[] path { get; set; } = new string[] { "musclebot" };
         public int iterations { get; set; } = 1;
         public string status { get; set; } = "requested";
     }

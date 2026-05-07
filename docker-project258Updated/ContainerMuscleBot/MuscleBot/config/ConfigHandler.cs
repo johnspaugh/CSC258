@@ -8,19 +8,19 @@ using System.Threading.Tasks;
 
 namespace MuscleBot.config
 {
-    public class JSONReader
+    public class ConfigHandler
     {
         public string token { get; set; } = "";
         public string prefix { get; set; } = "";
 
-        public async Task ReadJSON()
+        public async Task LoadConfig()
         {
             var path = Path.Combine(AppContext.BaseDirectory, "config", "config.json");
 
             using (StreamReader sr = new StreamReader(path))
             {
                 string json = await sr.ReadToEndAsync();
-                JSONStructure? data = JsonConvert.DeserializeObject<JSONStructure>(json);
+                ConfigJSON? data = JsonConvert.DeserializeObject<ConfigJSON>(json);
 
                 if (data != null)
                 {
@@ -34,7 +34,7 @@ namespace MuscleBot.config
     }
 
 
-    internal sealed class JSONStructure
+    internal sealed class ConfigJSON
     {
         public string token { get; set; } = "";
         public string prefix { get; set; } = "";
