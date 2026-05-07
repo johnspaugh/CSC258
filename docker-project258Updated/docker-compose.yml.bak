@@ -48,7 +48,5 @@ services:
   logdatabase:
     build: ./ContainerLogDatabase
     container_name: logdatabase
-    ports:
-      - "5000:5000"
     volumes:
-      - ./logs:/app/data
+      - ./Databases:/app/data

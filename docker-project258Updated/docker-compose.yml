@@ -18,6 +18,8 @@ services:
       dockerfile: Dockerfile
     container_name: userprofileservice
     restart: unless-stopped
+    volumes:
+      - ./Databases:/app/data
 
 
   # Service to manages Ingestion of feeds from Bluesky
