@@ -6,4 +6,4 @@ COPY LogDatabase.py .
 
 RUN mkdir -p /app/data
 
-CMD ["python", "LogDatabase.py"]
+CMD ["python", "-u", "LogDatabase.py"]

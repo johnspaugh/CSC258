@@ -1,17 +1,22 @@
 import socket
 import sqlite3
 import json
+import asyncio
 
 HOST = "0.0.0.0"
 PORT = 5000
 LOGDATABASE = "/app/data/logs.db"
 
 
-
-def setup_db():
+### Connect to and create the log database if not already made
+def SetupDatabase():
+    # Connect to sql database
     conn = sqlite3.connect(LOGDATABASE)
     cur = conn.cursor()
 
+    print("Creating new log database if necessary...")
+
+    # create database if it doesnt already exist
     cur.execute("""
         CREATE TABLE IF NOT EXISTS logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,11 +28,13 @@ def setup_db():
         )
     """)
 
+     # Finish and close connection to database
     conn.commit()
     conn.close()
 
-
-def save_log(service, username, poster, createdAt, message):
+### Save and record Logs
+def SaveLog(service, username, poster, createdAt, message):
+    # Connect to sql database
     conn = sqlite3.connect(LOGDATABASE)
     cur = conn.cursor()
 
@@ -37,39 +44,60 @@ def save_log(service, username, poster, createdAt, message):
         (service, username, poster, createdAt, message)
     )
 
-    # Finish connection
+    # Finish and close connection to database
     conn.commit()
     conn.close()
 
-# Create database if it doesnt already exist
-setup_db()
 
-# Begin accepting connections
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((HOST, PORT))
-server.listen()
+### Receives and handles requests from clients
+async def HandleRequests(reader, writer):
+    try:
+        message = []
 
-print("Log Database Manager Running...")
+        # continue to receive chunks until the full message comple
+        while True:
+            chunk = await reader.read(4096)
+            if not chunk:
+                break
+            message.append(chunk)
 
-# Keep running until app is closed
-while True:
-    conn, addr = server.accept()
-    message = []
+        # continue to receive chunks until the full message comple
+        data = b"".join(message).decode()
+        log = json.loads(data)
 
-    # Continue to receive chunks until message is complete
-    while True:
-        chunk = conn.recv(4096)
-        if not chunk:
-            break
-        message.append(chunk)
+        # save the log and write to sql database
+        SaveLog(
+            log.get("service", ""),
+            log.get("username", ""),
+            log.get("poster", ""),
+            log.get("createdAt", ""),
+            log.get("message", "")
+        )
 
-    # combine the chunks and deserialize into an object
-    data = b"".join(message).decode()
-    log = json.loads(data)
+        print(log)
+        print("Log Saved")
 
-    # record in log
-    save_log( log.get("service", ""), log.get("username", ""), log.get("poster", ""), log.get("createdAt", ""), log.get("message", ""))
+    # Finish the request
+    finally:
+        writer.close()
+        await writer.wait_closed()
 
-    print(log)
 
-    conn.close()
+async def RunLogDatabaseManager():
+    SetupDatabase()
+
+    LogManager = await asyncio.start_server(HandleRequests, HOST, PORT)
+
+    print("Log Database Manager Running...")
+
+    async with LogManager:
+        await LogManager.serve_forever()
+
+
+
+asyncio.run(RunLogDatabaseManager())
+
+
+
+
+
