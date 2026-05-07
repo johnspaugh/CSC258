@@ -43,3 +43,10 @@ services:
       dockerfile: Dockerfile
     container_name: dataprocessing
     restart: unless-stopped
+    
+  # 
+  logdatabase:
+    build: ./ContainerLogDatabase
+    container_name: logdatabase
+    volumes:
+      - ./Databases:/app/data

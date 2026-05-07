@@ -1,4 +1,5 @@
 ﻿using DSharpPlus.CommandsNext;
+using MuscleBot.commands;
 using MuscleBot.intake;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 
-namespace MuscleBot.commands
+namespace MuscleBot
 {
     internal class Listener
     {
@@ -27,6 +28,7 @@ namespace MuscleBot.commands
                 _ = HandleClient(client);
             }
         }
+
         static async Task HandleClient(TcpClient client)
         {
             try
@@ -67,24 +69,35 @@ namespace MuscleBot.commands
             // Check if the Json is a Feed Message
             if (root.TryGetProperty("posts", out _))
             {
-                var feed = FeedReader.DeserializeFeed2(json);
+                var feed = FeedReader.DeserializeFeed(json);
 
                 // Check feed
                 if (feed is not null && feed.posts.Count > 0)
                 {
                     Console.WriteLine($"Sending Feed to Discord Client.");
-                    var discordContext = MuscleBot.TEMP;
-
-                    // Send response on discord
+                    var discordContext = MuscleBot.PopRequest(feed.requestID);
+                    
                     if (discordContext is not null)
                     {
+                        // Send response on discord
                         await discordContext.Channel.SendMessageAsync(
                             $"Display Name: {feed.posts[0].display_name}\n" +
                             $"Handle: {feed.posts[0].handle}\n" +
                             $"CreatedAt: {feed.posts[0].created_at}\n" +
                             $"Text: {feed.posts[0].text}");
+
+                        // Send and record message in logdatabase 
+                        Utility.SendToLogs(
+                            "musclebot",
+                            discordContext.User.Username,
+                            feed.posts[0].display_name,
+                            feed.posts[0].created_at,
+                            feed.posts[0].text
+                        );
                     }
                 }
+
+                    
             }
 
             // Check if the Json is a UserProfile message
@@ -96,7 +109,8 @@ namespace MuscleBot.commands
                 // Check response from the User profile service 
                 if (userProfileCommandMessage is not null)
                 {
-                    CommandContext? ctx = MuscleBot.LookupRequest(userProfileCommandMessage.requestID);
+                    // Lookup and pop request, this request is completed
+                    CommandContext? ctx = MuscleBot.PopRequest(userProfileCommandMessage.requestID);
 
                     // Send response on discord
                     if (ctx is not null)

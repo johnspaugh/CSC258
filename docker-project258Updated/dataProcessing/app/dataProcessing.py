@@ -62,7 +62,7 @@ def handle_incoming(conn, addr):
         data["path"].append("dataProcessing")
         data["status"] = "processed"
         data["processed_by"] = "dataProcessing"
-
+        
         send_json(data, NEXT_HOST, NEXT_PORT)
 
     except Exception as e:

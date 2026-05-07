@@ -20,14 +20,15 @@ services:
     restart: unless-stopped
 
 
-  # Service to manages Ingestion of feeds from a given social medial outlet
+  # Service to manages Ingestion of feeds from Bluesky
   dataingestionbluesky:
     build:
       context: ./dataingestionbluesky
       dockerfile: Dockerfile
     container_name: dataingestionbluesky
     restart: unless-stopped
-
+    
+  # Service to manages Ingestion of feeds from Mastodon
   dataingestionmastodon:
     build:
       context: ./dataIngestionMastodon
@@ -42,3 +43,12 @@ services:
       dockerfile: Dockerfile
     container_name: dataprocessing
     restart: unless-stopped
+    
+  # 
+  logdatabase:
+    build: ./ContainerLogDatabase
+    container_name: logdatabase
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./logs:/app/data

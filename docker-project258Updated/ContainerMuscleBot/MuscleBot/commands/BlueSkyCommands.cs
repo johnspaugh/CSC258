@@ -19,34 +19,17 @@ namespace MuscleBot.commands
         [Command("ingest")]
         public async Task IngestBlueSky(CommandContext ctx, string keyword)
         {
-            try
-            {
-                using (TcpClient client = new TcpClient(BLUESKY_HOST, BLUESKY_PORT))
-                {
-                    // Create a default test command for now
-                    CommandMessage commandMessage = new CommandMessage();
-                    commandMessage.message = keyword;
+            // Create a default test command for now
+            CommandMessage commandMessage = new CommandMessage();
+            commandMessage.message = keyword;
+            commandMessage.requestID = MuscleBot.GenerateRequestID(ctx);
 
-                    // Convert message to bytes
-                    string json = JsonSerializer.Serialize(commandMessage);
-                    byte[] bytes = Encoding.UTF8.GetBytes(json);
+            Console.WriteLine($"Sending with RequestID ({commandMessage.requestID})");
 
-                    // Send out command to BluSky ingestion
-                    NetworkStream stream = client.GetStream();
-                    stream.Write(bytes, 0, bytes.Length);
+            // Convert message to bytes
+            string discordMessage = Utility.SendCommandMessage(commandMessage, BLUESKY_HOST, BLUESKY_PORT, ctx);
 
-                    // Saved context
-                    MuscleBot.TEMP = ctx;
-
-                    Console.WriteLine($"Stored channel: {ctx.Channel.Id}");
-
-                    await ctx.Channel.SendMessageAsync($"Sent -> {json}");
-                }
-            }
-            catch (Exception e)
-            {
-                await ctx.Channel.SendMessageAsync($"Error sending: {e.Message}");
-            }
+            await ctx.Channel.SendMessageAsync(discordMessage);
         }
     }
 
