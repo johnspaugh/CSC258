@@ -10,13 +10,14 @@
 # pip show uvicorn
 import json
 import os
+import queue as queue_mod
 import socket
 import sys
+import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-# sys.path.append(str(ROOT / "docker-project258Updated" / "dataIngestionBluesky" / "bluesky"))
-sys.path.append(str(ROOT))  # Add JSON_docker directory to path
+sys.path.append(str(ROOT))
 
 from receiveList import get_processed_data_json, process_data
 from models import CommandMessage
@@ -27,87 +28,114 @@ from fastapi.responses import FileResponse
 
 app = FastAPI()
 
-# Serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Serve index.html at root
 @app.get("/")
 def read_index():
     return FileResponse("static/index.html")
 
-# Example API endpoint
 @app.get("/api/hello")
 def hello(name: str = "World"):
     return {"message": f"Hello, {name}!"}
 
-# call on dataIngestion to get the processed data in JSON format
-def _recv_posts(host, port, message_dict):
+
+# ── Callback socket server (port 5000) ───────────────────────────────────────
+# dataProcessing connects here when it sees "webinterface" in the message path.
+# Each HTTP request registers a Queue keyed by requestID; the socket thread
+# deposits the payload so the HTTP handler can pick it up.
+
+_pending: dict = {}
+_req_counter = 0
+_counter_lock = threading.Lock()
+
+
+def _next_req_id() -> int:
+    global _req_counter
+    with _counter_lock:
+        _req_counter += 1
+        return _req_counter
+
+
+def _handle_callback(conn: socket.socket):
     chunks = []
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((host, port))
-        s.sendall(json.dumps(message_dict).encode("utf-8"))
-        #socket.SHUT_WR closes only the sending side — 
-        # the socket stays open for reading the response. 
-        # This is the standard pattern for half-close: "I'm done sending, now I'll just listen."
-        s.shutdown(socket.SHUT_WR)
+    try:
         while True:
-            data = s.recv(4096)
-            if not data:
+            chunk = conn.recv(4096)
+            if not chunk:
                 break
-            chunks.append(data.decode("utf-8"))
-    full = "".join(chunks)
-    if not full:
-        return []
-    posts = json.loads(full)
-    return [json.dumps(post) for post in posts]
+            chunks.append(chunk)
+    finally:
+        conn.close()
+    if not chunks:
+        return
+    try:
+        data = json.loads(b"".join(chunks).decode())
+        req_id = data.get("requestID")
+        if req_id in _pending:
+            _pending[req_id].put(data)
+    except Exception as e:
+        print(f"[webinterface] Callback error: {e}")
 
-@app.get("/api/get-bluesky-data")
-def get_bluesky_data(datapoint: str = "fitness"):
-    HOST = os.environ.get("INGEST_Bluesky_HOST", "localhost")
-    message = asdict(CommandMessage(message="bluesky"))
-    return _recv_posts(HOST, 5000, message)
 
-@app.get("/api/get-mastodon-data")
-def get_mastodon_data(datapoint: str = "fitness"):
-    HOST = os.environ.get("INGEST_Mastodon_HOST", "localhost")
-    message = asdict(CommandMessage(message="mastodon"))
-    return _recv_posts(HOST, 5000, message)
-# {"message": "This endpoint will process Bluesky data and return the processed JSON. Implementation is in progress."}
+def _socket_server():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as srv:
+        srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        srv.bind(("0.0.0.0", 5000))
+        srv.listen()
+        print("[webinterface] Callback listener on port 5000")
+        while True:
+            conn, _ = srv.accept()
+            threading.Thread(target=_handle_callback, args=(conn,), daemon=True).start()
+
+
+threading.Thread(target=_socket_server, daemon=True).start()
+# ─────────────────────────────────────────────────────────────────────────────
+
 
 @app.get("/api/process-data")
 def get_process_data(datasource: str, typeDataSelected: str):
-    """
-    Process  posts data from Bluesky or Mastodon through the receiveList pipeline
-    Returns the processed JSON data
-    """
+    req_id = _next_req_id()
+    q: queue_mod.Queue = queue_mod.Queue()
+    _pending[req_id] = q
+
     try:
-        
-        raw_text_data = []
         if datasource == "mastodon":
-            raw_text_data = get_mastodon_data(typeDataSelected)
-        else: #elif datasource == "bluesky":
-            raw_text_data = get_bluesky_data(typeDataSelected)
-        
-        if raw_text_data:
-            
-            json_data =process_data(raw_text_data)
-            parsed = json.loads(json_data)
-            if parsed:
-                return {
-                    "success": True,
-                    "record_count": len(parsed),
-                    "processed_data": parsed
-                }
-            else:
-                return {"success": False, "error": "Failed to convert data to JSON"}
+            HOST = os.environ.get("INGEST_Mastodon_HOST", "localhost")
+            msg = "mastodon"
         else:
-            return {"success": False, "error": "No posts retrieved from Bluesky"}
-    
+            HOST = os.environ.get("INGEST_Bluesky_HOST", "localhost")
+            msg = typeDataSelected or "fitness"
+
+        message = asdict(CommandMessage(message=msg, requestID=req_id, path=["webinterface"]))
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, 5000))
+            s.sendall(json.dumps(message).encode("utf-8"))
+            s.shutdown(socket.SHUT_WR)
+
+        try:
+            data = q.get(timeout=30)
+        except queue_mod.Empty:
+            return {"success": False, "error": "Timeout: pipeline did not respond"}
+
+        posts = data.get("posts", [])
+        if not posts:
+            return {"success": False, "error": f"No posts retrieved from {datasource}"}
+
+        raw_text_data = [json.dumps(post) for post in posts]
+        json_data = process_data(raw_text_data)
+        parsed = json.loads(json_data)
+        if parsed:
+            return {"success": True, "record_count": len(parsed), "processed_data": parsed}
+        else:
+            return {"success": False, "error": "No data after processing"}
+
     except Exception as e:
         return {"success": False, "error": str(e)}
+    finally:
+        _pending.pop(req_id, None)
 
-# once dataProcessing and dataIngestion are done, 
-# we can call the get_processed_data_json function to retrieve the processed data in JSON format and return it through an API endpoint
+
 @app.get("/api/processed-data")
 def get_processed_data():
     json_data = get_processed_data_json()
@@ -115,5 +143,3 @@ def get_processed_data():
         return {"processed_data": json.loads(json_data)}
     else:
         return {"error": "Processed data not available"}
-
-
