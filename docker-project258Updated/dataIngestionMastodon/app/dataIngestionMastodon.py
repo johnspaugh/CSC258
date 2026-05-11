@@ -45,12 +45,12 @@ def send_json(data, host, port, retries=10, delay=1):
     print(f"[dataIngestionMastodon] Failed to send to {host}:{port}")
     return False
 
-HASHTAG = "fitness"
+#HASHTAG = "fitness"
 
-def pull_mastodon_posts(limit=10):
+def pull_mastodon_posts(limit=10, query = "fitness"):
     # Send Mastodon request
     response = requests.get(
-        f"{INSTANCE}/api/v1/timelines/tag/{HASHTAG}",
+        f"{INSTANCE}/api/v1/timelines/tag/{query}",
         params={"limit": limit},
         timeout=10
     )
