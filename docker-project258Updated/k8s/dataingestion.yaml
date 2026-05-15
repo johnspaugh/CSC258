@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataingestion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dataingestion
+  template:
+    metadata:
+      labels:
+        app: dataingestion
+    spec:
+      containers:
+      - name: dataingestion
+        image: dataingestion:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dataingestion
+spec:
+  selector:
+    app: dataingestion
+  ports:
+  - port: 5000
+    targetPort: 5000
