@@ -1,29 +1,37 @@
 from atproto import Client
 import json
-import socket
+import asyncio
 
 HOST = "0.0.0.0"
 PORT = 5000
 
-NEXT_HOST = "dataProcessing"
+NEXT_HOST = "dataprocessing"
 NEXT_PORT = 5000
 
-def send_json(data, host, port):
+
+async def send_json(data, host, port):
     try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.connect((host, port))
-            message = json.dumps(data)
-            client.sendall(message.encode())
-            print(f"[dataIngestion] Sent to {host}:{port}")
+        reader, writer = await asyncio.open_connection(host, port)
+
+        message = json.dumps(data)
+        writer.write(message.encode())
+        await writer.drain()
+
+        writer.close()
+        await writer.wait_closed()
+
+        print(f"[dataIngestion] Sent to {host}:{port}")
+
     except Exception as e:
         print(f"[dataIngestion] Error sending to {host}:{port}: {e}")
 
+
 def get_posts(query="fitness"):
-    print("[dataIngestion] Creating Bluesky client...")
+    print("[dataInestion] Creating Bluesky client...")
     client = Client()
 
     print("[dataIngestion] Logging in...")
-    client.login('fitnesstracker.bsky.social', 'M+}5aj+C)5,^sU4')
+    client.login("fitnesstracker.bsky.social", "M+}5aj+C)5,^sU4")
 
     print("[dataIngestion] Searching posts...")
     response = client.app.bsky.feed.search_posts({
@@ -40,19 +48,23 @@ def get_posts(query="fitness"):
             "text": getattr(post.record, "text", ""),
             "display_name": getattr(post.author, "display_name", ""),
             "handle": getattr(post.author, "handle", ""),
-            "created_at": getattr(post.author, "created_at", ""),
+            "created_at": getattr(post.record, "created_at", ""),
             "tags": getattr(post.record, "tags", [])
         }
         results.append(obj)
 
     return results
 
-def handle_incoming(conn, addr):
+
+async def handle_incoming(reader, writer):
+    addr = writer.get_extra_info("peername")
+
     try:
         print(f"[dataIngestion] Connected by {addr}")
 
         print("[dataIngestion] Waiting for data...")
-        raw_data = conn.recv(65536).decode()
+        raw_data = await reader.read(65536)
+        raw_data = raw_data.decode()
 
         print(f"[dataIngestion] Raw data: {raw_data}")
 
@@ -63,11 +75,14 @@ def handle_incoming(conn, addr):
         data = json.loads(raw_data)
         print(f"[dataIngestion] Parsed JSON: {data}")
 
-        request = data.get("message")
+        request = data.get("message", "")
         if len(request) == 0:
             request = "fitness"
+
         print("[dataIngestion] Request received, fetching posts...")
-        posts = get_posts(request)
+
+        # Bluesky client is blocking, so run it in another thread
+        posts = await asyncio.to_thread(get_posts, request)
 
         outgoing = {
             "message": "ingested",
@@ -79,23 +94,25 @@ def handle_incoming(conn, addr):
         }
 
         print("[dataIngestion] Forwarding to dataProcessing...")
-        send_json(outgoing, NEXT_HOST, NEXT_PORT)
+        await send_json(outgoing, NEXT_HOST, NEXT_PORT)
         print("[dataIngestion] Forward complete")
 
     except Exception as e:
         print(f"[dataIngestion] Error: {e}")
+
     finally:
-        conn.close()
+        writer.close()
+        await writer.wait_closed()
 
-def run_server():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-        server.bind((HOST, PORT))
-        server.listen()
-        print("[dataIngestion] Listening...")
 
-        while True:
-            conn, addr = server.accept()
-            handle_incoming(conn, addr)
+async def run_server():
+    server = await asyncio.start_server(handle_incoming, HOST, PORT)
+
+    print("[dataIngestion] Listening...")
+
+    async with server:
+        await server.serve_forever()
+
 
 if __name__ == "__main__":
-    run_server()
+    asyncio.run(run_server())

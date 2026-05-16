@@ -17,7 +17,7 @@ namespace MuscleBot.commands
         public static CommandContext? currentContext;
 
         [Command("ingest")]
-        public async Task IngestBlueSky(CommandContext ctx, string keyword)
+        public async Task IngestBlueSky(CommandContext ctx, string keyword = "fitness")
         {
             // Create a default test command for now
             CommandMessage commandMessage = new CommandMessage();

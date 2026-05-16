@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import json
-import socket
+import asyncio
 import time
 
 HOST = "0.0.0.0"
@@ -12,43 +12,56 @@ NEXT_PORT = 5000
 
 INSTANCE = "https://mastodon.world"
 
+HASHTAG = "fitness"
 
-def recv_json(conn):
+
+async def recv_json(reader):
     chunks = []
 
-    # receive chunks until data message complete
     while True:
-        chunk = conn.recv(4096)
+        chunk = await reader.read(4096)
+
         if not chunk:
             break
+
         chunks.append(chunk)
-    
-    # Deserialize
+
     raw_data = b"".join(chunks).decode("utf-8")
     return json.loads(raw_data)
 
 
-def send_json(data, host, port, retries=10, delay=1):
+async def send_json(data, host, port, retries=10, delay=1):
     for attempt in range(1, retries + 1):
         try:
-            # Connect and send to discord client
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-                client.connect((host, port))
-                message = json.dumps(data)
-                client.sendall(message.encode("utf-8"))
-                print(f"[dataIngestionMastodon] Sent to {host}:{port}")
-                return True
+            reader, writer = await asyncio.open_connection(host, port)
+
+            message = json.dumps(data)
+            writer.write(message.encode("utf-8"))
+
+            await writer.drain()
+
+            writer.close()
+            await writer.wait_closed()
+
+            print(f"[dataIngestionMastodon] Sent to {host}:{port}")
+            return True
+
         except Exception as e:
             print(f"[dataIngestionMastodon] Attempt {attempt}/{retries} failed: {e}")
-            time.sleep(delay)
+            await asyncio.sleep(delay)
 
     print(f"[dataIngestionMastodon] Failed to send to {host}:{port}")
     return False
 
+<<<<<<< HEAD
 #HASHTAG = "fitness"
 
 def pull_mastodon_posts(limit=10, query = "fitness"):
     # Send Mastodon request
+=======
+
+def pull_mastodon_posts(limit=10):
+>>>>>>> 016d7c4629e8ac2ffbd7122ef992c3ab1ddc1014
     response = requests.get(
         f"{INSTANCE}/api/v1/timelines/tag/{query}",
         params={"limit": limit},
@@ -60,7 +73,6 @@ def pull_mastodon_posts(limit=10, query = "fitness"):
 
     normalized_posts = []
 
-    # Build mastodon data
     for post in posts:
         clean_text = BeautifulSoup(
             post["content"],
@@ -75,17 +87,19 @@ def pull_mastodon_posts(limit=10, query = "fitness"):
             "tags": [tag["name"] for tag in post.get("tags", [])]
         })
 
-    
     print(f"[dataIngestionMastodon] Found {len(normalized_posts)} posts")
-
 
     return normalized_posts
 
 
-def handle_incoming(conn, addr):
+async def handle_incoming(reader, writer):
+    addr = writer.get_extra_info("peername")
+
     try:
+        print(f"[dataIngestionMastodon] Connected by {addr}")
         print("[dataIngestionMastodon] Waiting for data...")
-        data = recv_json(conn)
+
+        data = await recv_json(reader)
 
         print(f"[dataIngestionMastodon] Received: {data}")
 
@@ -95,7 +109,7 @@ def handle_incoming(conn, addr):
 
         print("[dataIngestionMastodon] Starting Mastodon ingestion...")
 
-        posts = pull_mastodon_posts(limit=10)
+        posts = await asyncio.to_thread(pull_mastodon_posts, 10)
 
         output = {
             "message": "mastodon_complete",
@@ -106,26 +120,25 @@ def handle_incoming(conn, addr):
             "posts": posts
         }
 
-        send_json(output, NEXT_HOST, NEXT_PORT)
+        await send_json(output, NEXT_HOST, NEXT_PORT)
         print("[dataIngestionMastodon] Forward complete")
 
     except Exception as e:
         print(f"[dataIngestionMastodon] Error: {e}")
 
     finally:
-        conn.close()
+        writer.close()
+        await writer.wait_closed()
 
 
-def run_server():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-        server.bind((HOST, PORT))
-        server.listen()
-        print(f"[dataIngestionMastodon] Listening on {HOST}:{PORT}")
+async def run_server():
+    server = await asyncio.start_server(handle_incoming, HOST, PORT)
 
-        while True:
-            conn, addr = server.accept()
-            handle_incoming(conn, addr)
+    print(f"[dataIngestionMastodon] Listening on {HOST}:{PORT}")
+
+    async with server:
+        await server.serve_forever()
 
 
 if __name__ == "__main__":
-    run_server()
+    asyncio.run(run_server())

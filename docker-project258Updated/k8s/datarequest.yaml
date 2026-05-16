@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datarequest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: datarequest
+  template:
+    metadata:
+      labels:
+        app: datarequest
+    spec:
+      containers:
+      - name: datarequest
+        image: datarequest:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: datarequest
+
+spec:
+  selector:
+    app: datarequest
+
+  ports:
+    - name: socket
+      port: 5000
+      targetPort: 5000
+
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+  type: ClusterIP
