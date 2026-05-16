@@ -37,6 +37,14 @@ The bot currently supports the following commands:
 !bluesky ingest \[keyword] - The bot will search bluesky for posts featuring the keyword and display information about the first result.
 !mastodon ingest - The bot will search Mastodon for posts with the keyword "fitness" and display information about the first result.
 
+To see the results on the alternative web-browser API endpoint 
+use the following: http://127.0.0.1:8000
+
+Close Setup:
+
+As mentioned before, navigate back to the same terminal holding the running docker containers at the docker-project258Update folder in the command line. Then input the following to shut done the running docker containters.
+Crtl+C
+docker compose down
 
 
 CONTRIBUTIONS:
