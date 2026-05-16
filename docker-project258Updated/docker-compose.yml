@@ -53,7 +53,7 @@ services:
     volumes:
       - ./Databases:/app/data
 
-  # Web interface for viewing processed Bluesky data
+  # Web interface for viewing processed data from Bluesky and Mastodon
   webinterface:
     build:
       context: ../JSON_docker

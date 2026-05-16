@@ -88,6 +88,7 @@
     </style>
 </head>
 <script>
+    //test function to call the example API endpoint and display the result. This was used to verify that the API is working correctly before implementing the actual data processing functionality.
     async function callAPI() {
         const name = document.getElementById("nameInput").value;
         const response = await fetch(`/api/hello?name=${name}`);
@@ -95,6 +96,7 @@
         document.getElementById("result").innerText = data.message;
     }
 
+    // Function to call the API endpoint to process data from either Bluesky or Mastodon. It updates the UI with loading status, and then displays the results or any errors returned by the API.
     async function processData(datasource) {
         typeDataSelected = "fitness"; // You can modify this to allow user selection of data type
         if (datasource === "bluesky") {

@@ -9,8 +9,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY *.py .
 
 # Web interface source (only what's needed — venv is not copied)
-# COPY Web_Interface/static/ Web_Interface/static/
-# COPY Web_Interface/web_main.py Web_Interface/
 # Web interface source
 COPY Web_Interface/ Web_Interface/
 
