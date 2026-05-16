@@ -11,13 +11,15 @@ namespace MuscleBot.commands
 {
     public class TestCommands : BaseCommandModule
     {
+
+        // Test funciton to make sure bot is working
         [Command("test")]
         public async Task TestCommand(CommandContext ctx)
         {
             await ctx.Channel.SendMessageAsync($"Hello {ctx.User.Username}");
         }
 
-
+        // Test funciton to make sure bot is working
         [Command("add")]
         public async Task ADD(CommandContext ctx, int number1, int number2)
         {

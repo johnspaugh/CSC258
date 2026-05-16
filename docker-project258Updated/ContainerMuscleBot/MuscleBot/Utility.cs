@@ -24,6 +24,7 @@ namespace MuscleBot
                     return $"Sent -> {json}";
                 }
             }
+            // Unable to find the host
             catch (Exception e)
             {
                 return $"Error sending: {e.Message}";

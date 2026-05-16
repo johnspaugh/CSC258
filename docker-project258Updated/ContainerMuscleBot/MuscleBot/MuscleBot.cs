@@ -46,9 +46,11 @@ namespace MuscleBot
                 AutoReconnect = true,
             };
 
+            // Prepping discord bot to run
             Client = new DiscordClient(discordConfig);
             Client.Ready += Client_Ready;
 
+            // Configurations for the discord bot
             var commandsConfig = new CommandsNextConfiguration()
             {
                 StringPrefixes = new string[] { reader.prefix },
@@ -77,7 +79,10 @@ namespace MuscleBot
 
         public static int GenerateRequestID(CommandContext commandContext)
         {
+            // Incrementing request ID to make every ID unique
             int newRequestID = RequestID++;
+
+            // Storing the request ID to finish request later
             PendingRequests[newRequestID] = commandContext;
 
             return newRequestID;
