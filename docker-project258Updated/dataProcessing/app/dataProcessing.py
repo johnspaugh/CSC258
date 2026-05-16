@@ -1,6 +1,6 @@
-import socket
+
+import asyncio
 import json
-import struct
 
 HOST = "0.0.0.0"
 PORT = 5000
@@ -9,81 +9,84 @@ NEXT_HOST = "musclebot"
 NEXT_PORT = 5000
 
 
-
-def send_json(data, host, port, chunk_size=4096):
+async def send_json(data, host, port):
     try:
-        # Connect with receiver
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.connect((host, port))
-            message = json.dumps(data).encode()
+        reader, writer = await asyncio.open_connection(host, port)
 
-            total_sent = 0
-            
-            # Continue sending chunks until message is complete
-            for i in range(0, len(message), chunk_size):
-                chunk = message[i:i + chunk_size]
-                client.sendall(chunk)
-                total_sent += len(chunk)
+        message = json.dumps(data)
+        writer.write(message.encode("utf-8"))
 
-            # Notify receiver message has been completely sent
-            client.shutdown(socket.SHUT_WR)
+        await writer.drain()
 
-            print(f"[dataProcessing] Sent {total_sent}/{len(message)} bytes to {host}:{port}")
+        writer.close()
+        await writer.wait_closed()
+
+        print(f"[dataProcessing] Sent to {host}:{port}")
 
     except Exception as e:
         print(f"[dataProcessing] Error sending to {host}:{port}: {e}")
 
 
-def receive_all(conn):
+async def receive_all(reader):
     chunks = []
-    # Continue receiving chunks until message is complete
+
     while True:
-        data = conn.recv(4096)
+        data = await reader.read(4096)
+
         if not data:
             break
+
         chunks.append(data)
-    return b"".join(chunks).decode()
+
+    return b"".join(chunks).decode("utf-8")
 
 
-def handle_incoming(conn, addr):
+async def handle_incoming(reader, writer):
+    addr = writer.get_extra_info("peername")
+
     try:
-        raw_data = receive_all(conn)
+        raw_data = await receive_all(reader)
+
         if not raw_data:
             return
-        
-        # Digest incoming data
+
         data = json.loads(raw_data)
-        print(f"[dataProcessing] Received from {addr}")
+
+        print(f"[dataProcessing] Received from {addr}, source={data.get('source', 'unknown')}")
 
         if "path" not in data:
             data["path"] = []
-        # Update log data
+
         data["path"].append("dataProcessing")
         data["status"] = "processed"
         data["processed_by"] = "dataProcessing"
 
         if "webinterface" in data["path"]:
-            send_json(data, "webinterface", NEXT_PORT)
+            await send_json(data, "webinterface", NEXT_PORT)
         else:
-            send_json(data, NEXT_HOST, NEXT_PORT)
+            await send_json(data, "musclebot", NEXT_PORT)
 
+    
     except Exception as e:
         print(f"[dataProcessing] Error handling message: {e}")
+
     finally:
-        conn.close()
+        writer.close()
+        await writer.wait_closed()
 
 
-def run_server():
-    # Set up and run service
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-        server.bind((HOST, PORT))
-        server.listen()
-        print(f"[dataProcessing] Listening on {HOST}:{PORT}")
+async def run_server():
+    server = await asyncio.start_server(handle_incoming, HOST, PORT)
 
-        while True:
-            conn, addr = server.accept()
-            handle_incoming(conn, addr)
+    print(f"[dataProcessing] Listening on {HOST}:{PORT}")
+
+    async with server:
+        await server.serve_forever()
 
 
 if __name__ == "__main__":
-    run_server()
+    asyncio.run(run_server())
+
+
+        
+

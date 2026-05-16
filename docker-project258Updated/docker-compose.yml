@@ -46,7 +46,7 @@ services:
     container_name: dataprocessing
     restart: unless-stopped
     
-  # 
+  # Service the manages the log database
   logdatabase:
     build: ./ContainerLogDatabase
     container_name: logdatabase
