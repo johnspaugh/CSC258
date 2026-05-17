@@ -19,6 +19,7 @@ namespace MuscleBot.commands
         [Command("register")]
         public async Task Register(CommandContext ctx)
         {
+            // Building command message
             UserProfileCommandMessage message = new UserProfileCommandMessage();
             message.command = "register";
             message.username = ctx.User.Username;
