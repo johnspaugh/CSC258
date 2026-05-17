@@ -62,6 +62,11 @@ Open Docker Desktop and ensure:
 - Docker is running
 - Kubernetes is enabled
 
+For no scaling and easier running simply run and skip all steps until Close setup
+```bash
+docker compose up --build
+```
+
 Verify Kubernetes:
 
 ```bash
