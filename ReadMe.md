@@ -20,14 +20,15 @@ docker depends on compose.yml for its build
 bot interface depend on discord permissions and access to Discord account
 
 
-
 Setup:
 
 Ensure Discord API key is properly placed in \\ContainerMuscleBot\\MuscleBot\\config\\config.json, it must be placed manually because Discord deactivates API keys which are shared online as a security measure.
 As mentioned, navigate to the docker-project258Update folder in the command line
 run docker compose build
 run docker compose up
-Open a Discord server in which your account has sufficient permissions to invite bot and invite MuscleBotTest
+Open a Discord server in which your account has sufficient permissions to invite bot and invite MuscleBot with the following link: 
+https://discord.com/oauth2/authorize?client_id=1480813129318535239&permissions=8&integration_type=0&scope=bot+applications.commands
+
 
 # CSC 258 Distributed Systems Project - Kubernetes Setup Guide
 
@@ -414,4 +415,9 @@ take data and print out on discord through the discord bot
 recieve json
 discord bot convets to plain tex discord message
 discord bot key, need to run shared with group
+user profile database manager
+message log database manager
+sql database writing
+
+
 
