@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
-banned_words = ["shit", "fuck", "ass", "cock", "pussy", "dick", "porn", "bitch", "slut", "whore"]
+
+#Again, pardon the language. The implementation is slightly different than the one in Bluesky because the structure of the post is different.
+banned_words = ["shit", "fuck", "ass", "cock", "pussy", "dick", "porn", "bitch", "slut", "whore", "nsfw"]
 
 def filter_post(post):
     text = BeautifulSoup(

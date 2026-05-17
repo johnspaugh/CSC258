@@ -67,11 +67,12 @@ def pull_mastodon_posts(limit=10, query = "fitness"):
 
     response.raise_for_status()
     posts = response.json()
-    #filtered_posts = [post for post in posts if filter_post(post)]
+    #This is where we filter out posts with banned words.
+    filtered_posts = [post for post in posts if filter_post(post)]
 
     normalized_posts = []
 
-    for post in posts:
+    for post in filtered_posts:
         clean_text = BeautifulSoup(
             post["content"],
             "html.parser"
@@ -100,10 +101,6 @@ async def handle_incoming(reader, writer):
         data = await recv_json(reader)
 
         print(f"[dataIngestionMastodon] Received: {data}")
-
-        #if data.get("message") != "mastodon":
-        #    print("[dataIngestionMastodon] Message not for me. Ignoring.")
-        #    return
 
         print("[dataIngestionMastodon] Starting Mastodon ingestion...")
 
