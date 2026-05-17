@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logdatabase
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logdatabase
+  template:
+    metadata:
+      labels:
+        app: logdatabase
+    spec:
+      containers:
+      - name: logdatabase
+        image: logdatabase:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - name: log-data
+          mountPath: /app/data
+      volumes:
+      - name: log-data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logdatabase
+spec:
+  selector:
+    app: logdatabase
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000

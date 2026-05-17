@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataingestionbluesky
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dataingestionbluesky
+  template:
+    metadata:
+      labels:
+        app: dataingestionbluesky
+    spec:
+      containers:
+      - name: dataingestionbluesky
+        image: dataingestionbluesky:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dataingestionbluesky
+spec:
+  selector:
+    app: dataingestionbluesky
+  ports:
+  - port: 5000
+    targetPort: 5000
