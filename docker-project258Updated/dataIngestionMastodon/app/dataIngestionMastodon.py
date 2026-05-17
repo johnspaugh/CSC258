@@ -4,6 +4,8 @@ import json
 import asyncio
 import time
 
+from filter import filter_post
+
 HOST = "0.0.0.0"
 PORT = 5000
 
@@ -14,7 +16,7 @@ INSTANCE = "https://mastodon.world"
 
 HASHTAG = "fitness"
 
-
+#function to receive json data from the socket
 async def recv_json(reader):
     chunks = []
 
@@ -29,7 +31,7 @@ async def recv_json(reader):
     raw_data = b"".join(chunks).decode("utf-8")
     return json.loads(raw_data)
 
-
+#function to send json data to the next service with retries
 async def send_json(data, host, port, retries=10, delay=1):
     for attempt in range(1, retries + 1):
         try:
@@ -53,15 +55,10 @@ async def send_json(data, host, port, retries=10, delay=1):
     print(f"[dataIngestionMastodon] Failed to send to {host}:{port}")
     return False
 
-<<<<<<< HEAD
-#HASHTAG = "fitness"
 
+#function to pull posts from Mastodon using the API and normalize them
 def pull_mastodon_posts(limit=10, query = "fitness"):
     # Send Mastodon request
-=======
-
-def pull_mastodon_posts(limit=10):
->>>>>>> 016d7c4629e8ac2ffbd7122ef992c3ab1ddc1014
     response = requests.get(
         f"{INSTANCE}/api/v1/timelines/tag/{query}",
         params={"limit": limit},
@@ -70,6 +67,7 @@ def pull_mastodon_posts(limit=10):
 
     response.raise_for_status()
     posts = response.json()
+    #filtered_posts = [post for post in posts if filter_post(post)]
 
     normalized_posts = []
 
@@ -91,7 +89,7 @@ def pull_mastodon_posts(limit=10):
 
     return normalized_posts
 
-
+#function to handle incoming connections, receive data, pull Mastodon posts, and forward results to the next service
 async def handle_incoming(reader, writer):
     addr = writer.get_extra_info("peername")
 
@@ -103,13 +101,13 @@ async def handle_incoming(reader, writer):
 
         print(f"[dataIngestionMastodon] Received: {data}")
 
-        if data.get("message") != "mastodon":
-            print("[dataIngestionMastodon] Message not for me. Ignoring.")
-            return
+        #if data.get("message") != "mastodon":
+        #    print("[dataIngestionMastodon] Message not for me. Ignoring.")
+        #    return
 
         print("[dataIngestionMastodon] Starting Mastodon ingestion...")
 
-        posts = await asyncio.to_thread(pull_mastodon_posts, 10)
+        posts = await asyncio.to_thread(pull_mastodon_posts, 10, data.get("message"))
 
         output = {
             "message": "mastodon_complete",

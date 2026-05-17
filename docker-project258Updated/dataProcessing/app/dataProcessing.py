@@ -42,6 +42,7 @@ async def receive_all(reader):
 
 
 async def handle_incoming(reader, writer):
+    print("Handling incoming in dataProcessing")
     addr = writer.get_extra_info("peername")
 
     try:

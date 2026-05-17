@@ -2,13 +2,15 @@ from atproto import Client
 import json
 import asyncio
 
+from filter import filter_post
+
 HOST = "0.0.0.0"
 PORT = 5000
 
 NEXT_HOST = "dataprocessing"
 NEXT_PORT = 5000
 
-
+#function to send json data to the next service
 async def send_json(data, host, port):
     try:
         reader, writer = await asyncio.open_connection(host, port)
@@ -25,7 +27,7 @@ async def send_json(data, host, port):
     except Exception as e:
         print(f"[dataIngestion] Error sending to {host}:{port}: {e}")
 
-
+#function to pull posts from Bluesky using the API and normalize them
 def get_posts(query="fitness"):
     print("[dataInestion] Creating Bluesky client...")
     client = Client()
@@ -40,10 +42,11 @@ def get_posts(query="fitness"):
     })
 
     posts = response.posts
-    print(f"[dataIngestion] Found {len(posts)} posts")
+    filtered_posts = [post for post in posts if filter_post(post)]
+    print(f"[dataIngestion] Found {len(filtered_posts)} posts")
 
     results = []
-    for post in posts:
+    for post in filtered_posts:
         obj = {
             "text": getattr(post.record, "text", ""),
             "display_name": getattr(post.author, "display_name", ""),
