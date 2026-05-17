@@ -86,10 +86,12 @@ async def HandleRequests(reader, writer):
 async def RunLogDatabaseManager():
     SetupDatabase()
 
+    # Start up the Log Manager, ready to take requests
     LogManager = await asyncio.start_server(HandleRequests, HOST, PORT)
 
     print("Log Database Manager Running...")
 
+    # Keep the Log Manager running
     async with LogManager:
         await LogManager.serve_forever()
 

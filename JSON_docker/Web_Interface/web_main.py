@@ -28,12 +28,15 @@ from fastapi.responses import FileResponse
 
 app = FastAPI()
 
+#serve static files from the "static" directory
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Serve the index.html at the root path, which will be the main entry point for the web interface. 
 @app.get("/")
 def read_index():
     return FileResponse("static/index.html")
 
+# Example API endpoint to demonstrate functionality. Which was used in a test button in the frontend to verify the API is working.
 @app.get("/api/hello")
 def hello(name: str = "World"):
     return {"message": f"Hello, {name}!"}
@@ -91,7 +94,7 @@ def _socket_server():
 threading.Thread(target=_socket_server, daemon=True).start()
 # ─────────────────────────────────────────────────────────────────────────────
 
-
+# API endpoint to trigger data processing. It sends a command message to the appropriate service (Mastodon or Bluesky) and waits for the response via the callback socket.
 @app.get("/api/process-data")
 def get_process_data(datasource: str, typeDataSelected: str):
     req_id = _next_req_id()
@@ -136,6 +139,7 @@ def get_process_data(datasource: str, typeDataSelected: str):
         _pending.pop(req_id, None)
 
 
+# Example API endpoint to retrieve processed data (for demonstration purposes) in global state already, else return error.
 @app.get("/api/processed-data")
 def get_processed_data():
     json_data = get_processed_data_json()
